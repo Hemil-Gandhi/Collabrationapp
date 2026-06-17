@@ -1,0 +1,61 @@
+<ion-content [fullscreen]="true">
+  <div class="auth-container">
+    <ion-card class="auth-card">
+      <ion-card-header class="auth-header">
+        <ion-card-title class="brand-title">Verify Identity</ion-card-title>
+        <p class="subtitle">We sent a 6-digit code to <strong>{{ email }}</strong></p>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form [formGroup]="otpForm" (ngSubmit)="onSubmit()">
+          <ion-item lines="none" class="form-item">
+            <ion-label position="stacked" class="form-label">Verification Code</ion-label>
+            <ion-input
+              formControlName="otp"
+              type="text"
+              maxlength="6"
+              placeholder="123456"
+              class="custom-input otp-input"
+            ></ion-input>
+          </ion-item>
+
+          <ion-text color="danger" class="error-msg-text" *ngIf="errorMsg">
+            <p class="error-msg">{{ errorMsg }}</p>
+          </ion-text>
+          <ion-text color="success" class="success-msg-text" *ngIf="successMsg">
+            <p class="success-msg">{{ successMsg }}</p>
+          </ion-text>
+
+          <ion-button
+            type="submit"
+            expand="block"
+            class="auth-btn"
+            [disabled]="otpForm.invalid || isLoading"
+          >
+            {{ isLoading ? 'Verifying...' : 'Verify Code' }}
+          </ion-button>
+        </form>
+
+        <div class="auth-footer resend-section">
+          <ion-text color="medium">
+            <p>Didn't receive the code?</p>
+          </ion-text>
+          <ion-button
+            (click)="resendOtp()"
+            fill="outline"
+            expand="block"
+            class="resend-btn"
+            [disabled]="isResending"
+          >
+            {{ isResending ? 'Sending code...' : 'Resend Code' }}
+          </ion-button>
+        </div>
+
+        <div class="auth-footer back-link-section">
+          <a routerLink="/register" class="back-link">Back to Register</a>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
+

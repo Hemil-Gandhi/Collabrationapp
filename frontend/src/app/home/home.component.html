@@ -1,0 +1,70 @@
+<ion-header [translucent]="true" class="camp-header">
+  <ion-toolbar class="navbar">
+    <ion-title slot="start" class="brand-title" routerLink="/home">
+      <span class="brand-title-text">Collab Hub</span>
+    </ion-title>
+
+    <ion-buttons slot="end" class="navbar-right" *ngIf="user">
+      <ion-badge class="user-role-badge-premium">
+        {{ user.role | titlecase }}
+      </ion-badge>
+
+      <ion-button
+        routerLink="/profile-page"
+        class="profile-btn-premium"
+        fill="clear"
+      >
+        <ion-label class="profile-name-text">{{
+          user.name || user.email
+        }}</ion-label>
+      </ion-button>
+
+      <ion-button
+        (click)="logout()"
+        fill="clear"
+        color="danger"
+        class="logout-btn-premium"
+      >
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        <ion-label>Sign Out</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="home-container">
+    <div class="cards-container">
+      <ion-card class="nav-card campaigns-card" routerLink="/campaigns">
+        <div class="card-bg"></div>
+        <ion-card-header>
+          <ion-card-title class="card-title">Campaigns</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="card-desc">
+          <p *ngIf="user?.role === 'brand'">Create new campaigns</p>
+          <p *ngIf="user?.role === 'influencer'">Discover campaigns</p>
+        </ion-card-content>
+        <div class="card-action">
+          <span>{{
+            user?.role === "brand" ? "Manage Campaigns" : "Explore Campaigns"
+          }}</span>
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </div>
+      </ion-card>
+
+      <ion-card class="nav-card profile-card" routerLink="/profile-page">
+        <div class="card-bg"></div>
+        <ion-card-header>
+          <ion-card-title class="card-title">My Profile</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="card-desc">
+          <p>View profile.</p>
+        </ion-card-content>
+        <div class="card-action">
+          <span>View Profile</span>
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </div>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

@@ -1,0 +1,273 @@
+/* ─── Root & Layout ──────────────────────────────────────────────────────── */
+.home-content {
+  --background: #09090b;
+}
+
+/* ─── Navbar (Match Campaign) ───────────────────────────────────────────── */
+.camp-header {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+}
+
+.navbar {
+  --background: rgba(9, 9, 11, 0.7);
+  --color: #ffffff;
+  --min-height: 64px;
+  backdrop-filter: blur(20px) saturate(180%);
+  
+  --padding-start: 20px;
+  --padding-end: 20px;
+
+  @media (min-width: 1024px) {
+    --padding-start: max(20px, calc((100% - 1200px) / 2 + 20px));
+    --padding-end: max(20px, calc((100% - 1200px) / 2 + 20px));
+  }
+}
+
+.brand-title {
+  --padding-start: 0;
+  --padding-end: 0;
+  cursor: pointer;
+  
+  .brand-title-text {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    color: #ffffff;
+    font-family: "Outfit", sans-serif;
+  }
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-role-badge-premium {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  --padding-start: 8px;
+  --padding-end: 8px;
+  --padding-top: 3px;
+  --padding-bottom: 3px;
+  --background: rgba(255, 255, 255, 0.04);
+  color: #a1a1aa;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.profile-btn-premium {
+  --background: rgba(255, 255, 255, 0.02);
+  --border-radius: 30px;
+  --padding-start: 4px;
+  --padding-end: 14px;
+  --color: #e4e4e7;
+  height: 36px;
+  margin: 0 8px 0 0;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    --background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.12);
+    --color: #ffffff;
+    transform: translateY(-1px);
+  }
+
+  .profile-avatar {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    margin: 0 8px 0 0;
+  }
+
+  .profile-avatar-initial {
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1;
+  }
+
+  .profile-name-text {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: inline-block;
+  }
+}
+
+.logout-btn-premium {
+  --color: #f43f5e;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: none;
+  height: 36px;
+  margin: 0;
+  --padding-start: 12px;
+  --padding-end: 12px;
+  --border-radius: 8px;
+  transition: all 0.25s ease;
+
+  &:hover {
+    --background: rgba(244, 63, 94, 0.08);
+    transform: translateY(-1px);
+  }
+
+  ion-icon {
+    font-size: 16px;
+    margin-right: 4px;
+  }
+}
+
+/* ─── Home Content ──────────────────────────────────────────────────────── */
+.home-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: 'Outfit', sans-serif;
+}
+
+.welcome-section {
+  text-align: center;
+  margin-bottom: 60px;
+  animation: fadeInDown 0.6s ease-out;
+
+  .welcome-title {
+    font-size: 32px;
+    font-weight: 800;
+    color: #ffffff;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+
+  .welcome-subtitle {
+    font-size: 16px;
+    color: #a1a1aa;
+    font-weight: 400;
+  }
+}
+
+/* ─── Cards ─────────────────────────────────────────────────────────────── */
+.cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+  width: 100%;
+}
+
+.nav-card {
+  position: relative;
+  background: #121214;
+  border: 1px solid #1f1f23;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  animation: fadeInUp 0.6s ease-out both;
+
+  --background: transparent;
+
+  &:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+}
+
+.card-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  // background: linear-gradient(135deg, #6366f1, #a855f7);
+  opacity: 0.03;
+  transition: all 0.5s ease;
+  z-index: 0;
+  border-bottom-left-radius: 50% 20%;
+  border-bottom-right-radius: 50% 20%;
+}
+
+// .campaigns-card .card-bg {
+//   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+// }
+
+// .profile-card .card-bg {
+//   background: linear-gradient(135deg, #10b981, #06b6d4);
+// }
+
+ion-card-header, ion-card-content, .card-action {
+  position: relative;
+  z-index: 1;
+}
+
+ion-card-header {
+  padding: 30px 24px 10px;
+  text-align: center;
+}
+
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  color: #e4e4e7;
+}
+
+.card-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.3px;
+}
+
+.card-desc {
+  padding: 0 24px 24px;
+  text-align: center;
+  color: #a1a1aa;
+  font-size: 14px;
+  line-height: 1.6;
+  flex-grow: 1;
+}
+
+.card-action {
+  padding: 20px 24px;
+  border-top: 1px solid #1f1f23;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #a1a1aa;
+  transition: color 0.3s ease;
+
+  ion-icon {
+    font-size: 1.1rem;
+    transition: transform 0.3s ease;
+  }
+}
+
+@keyframes fadeInDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}

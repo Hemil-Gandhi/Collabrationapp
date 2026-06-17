@@ -1,0 +1,851 @@
+<ion-header [translucent]="true" class="camp-header">
+  <ion-toolbar class="navbar">
+    <ion-title slot="start" class="brand-title" routerLink="/home">
+      <span class="brand-title-text">Collab Hub</span>
+    </ion-title>
+
+    <div class="header-center">
+      <ion-segment
+        *ngIf="user?.role === 'influencer'"
+        [value]="activeTab"
+        (ionChange)="setTab($any($event).detail.value)"
+        class="navbar-tabs-segment"
+      >
+        <ion-segment-button value="discover" class="segment-btn">
+          <ion-label>Discover</ion-label>
+        </ion-segment-button>
+        <ion-segment-button value="applied" class="segment-btn">
+          <ion-label>Applied</ion-label>
+          <ion-badge
+            color="medium"
+            *ngIf="appliedCount > 0"
+            class="tab-badge"
+            >{{ appliedCount }}</ion-badge
+          >
+        </ion-segment-button>
+      </ion-segment>
+
+      <ion-button
+        *ngIf="user?.role === 'brand'"
+        (click)="toggleCreateForm()"
+        class="new-camp-btn-premium"
+        [class.active]="showCreateForm"
+        fill="solid"
+      >
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        <ion-label>New Campaign</ion-label>
+      </ion-button>
+    </div>
+
+    <ion-buttons slot="end" class="navbar-right">
+      <ion-badge class="user-role-badge-premium">
+        {{ user?.role | titlecase }}
+      </ion-badge>
+
+      <ion-button
+        routerLink="/profile-page"
+        class="profile-btn-premium"
+        fill="clear"
+      >
+        <ion-label class="profile-name-text">{{
+          user?.name || user?.email
+        }}</ion-label>
+      </ion-button>
+
+      <ion-button
+        (click)="logout()"
+        fill="clear"
+        color="danger"
+        class="logout-btn-premium"
+      >
+        <ion-icon name="log-out-outline" slot="start"></ion-icon>
+        <ion-label>Sign Out</ion-label>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <div class="camp-root">
+    <div class="page-body">
+      <aside class="sidebar-col" *ngIf="!selectedCampaign">
+        <div class="sidebar">
+          <div class="sidebar-section">
+            <ion-label class="sidebar-label">{{ sidebarNicheLabel }}</ion-label>
+            <div class="niche-list">
+              <ion-button
+                [fill]="selectedNiche === 'all' ? 'solid' : 'clear'"
+                (click)="setNiche('all')"
+                class="niche-item-btn"
+                expand="block"
+              >
+                All {{ sidebarNicheLabel }}s
+              </ion-button>
+
+              <ng-container *ngFor="let n of sortedNicheOptions; let i = index">
+                <div
+                  *ngIf="i === preferredNicheCount && preferredNicheCount > 0"
+                  class="niche-divider"
+                >
+                  <span class="niche-divider-label">{{
+                    sidebarOtherLabel
+                  }}</span>
+                </div>
+                <ion-button
+                  [fill]="selectedNiche === n ? 'solid' : 'clear'"
+                  (click)="setNiche(n)"
+                  class="niche-item-btn"
+                  [class.niche-preferred]="i < preferredNicheCount"
+                  expand="block"
+                >
+                  {{ getNicheDisplayName(n) | titlecase }}
+                </ion-button>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <ion-label class="sidebar-label">Platform</ion-label>
+            <div class="niche-list">
+              <ion-button
+                [fill]="selectedPlatform === 'all' ? 'solid' : 'clear'"
+                (click)="selectedPlatform = 'all'; applyFilters()"
+                class="niche-item-btn"
+                expand="block"
+              >
+                All Platforms
+              </ion-button>
+              <ion-button
+                *ngFor="let p of platformOptions"
+                [fill]="selectedPlatform === p ? 'solid' : 'clear'"
+                (click)="selectedPlatform = p; applyFilters()"
+                class="niche-item-btn"
+                expand="block"
+              >
+                {{ p }}
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Sort Filter -->
+          <div class="sidebar-section">
+            <ion-label class="sidebar-label">Sort By</ion-label>
+            <div class="niche-list">
+              <ion-button
+                [fill]="selectedSort === 'newest' ? 'solid' : 'clear'"
+                (click)="selectedSort = 'newest'; applyFilters()"
+                class="niche-item-btn"
+                expand="block"
+              >
+                Newest First
+              </ion-button>
+              <ion-button
+                [fill]="selectedSort === 'budget-high' ? 'solid' : 'clear'"
+                (click)="selectedSort = 'budget-high'; applyFilters()"
+                class="niche-item-btn"
+                expand="block"
+              >
+                Budget: High → Low
+              </ion-button>
+              <ion-button
+                [fill]="selectedSort === 'budget-low' ? 'solid' : 'clear'"
+                (click)="selectedSort = 'budget-low'; applyFilters()"
+                class="niche-item-btn"
+                expand="block"
+              >
+                Budget: Low → High
+              </ion-button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="main-content-col">
+        <div class="main-content">
+          <ion-card
+            class="create-panel"
+            *ngIf="showCreateForm && user?.role === 'brand'"
+          >
+            <ion-card-header>
+              <ion-card-title class="panel-title"
+                >Create New Campaign</ion-card-title
+              >
+            </ion-card-header>
+
+            <ion-card-content>
+              <form [formGroup]="campaignForm" (ngSubmit)="onCreateCampaign()">
+                <ion-row>
+                  <ion-col size="12">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Campaign Title</ion-label
+                      >
+                      <ion-input
+                        formControlName="title"
+                        type="text"
+                        placeholder="e.g. Summer Collection Launch"
+                        class="custom-input"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+
+                <ion-row>
+                  <ion-col size="6" size-md="3">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Platform</ion-label
+                      >
+                      <ion-select
+                        formControlName="platform"
+                        interface="popover"
+                        class="custom-select-ionic"
+                      >
+                        <ion-select-option
+                          *ngFor="let p of platformOptions"
+                          [value]="p"
+                          >{{ p }}</ion-select-option
+                        >
+                      </ion-select>
+                    </ion-item>
+                  </ion-col>
+
+                  <ion-col size="6" size-md="3">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Niche</ion-label
+                      >
+                      <ion-select
+                        formControlName="niche"
+                        placeholder="Select niche"
+                        interface="popover"
+                        class="custom-select-ionic"
+                      >
+                        <ion-select-option
+                          *ngFor="let niche of nicheOptions"
+                          [value]="niche"
+                          >{{ niche | titlecase }}</ion-select-option
+                        >
+                      </ion-select>
+                    </ion-item>
+                  </ion-col>
+
+                  <ion-col size="6" size-md="3">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Budget (₹)</ion-label
+                      >
+                      <ion-input
+                        formControlName="budget"
+                        type="number"
+                        placeholder="Amount"
+                        class="custom-input"
+                        min="1"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+
+                  <ion-col size="6" size-md="3">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Total Applicants</ion-label
+                      >
+                      <ion-input
+                        formControlName="maxApplicants"
+                        type="number"
+                        placeholder="e.g. 10"
+                        class="custom-input"
+                        min="1"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+
+                <ion-row>
+                  <ion-col size="6" size-md="6">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Start Date</ion-label
+                      >
+                      <ion-input
+                        formControlName="startDate"
+                        type="date"
+                        class="custom-input"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+
+                  <ion-col size="6" size-md="6">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >End Date</ion-label
+                      >
+                      <ion-input
+                        formControlName="endDate"
+                        type="date"
+                        class="custom-input"
+                      ></ion-input>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+
+                <ion-row style="margin-top: 12px">
+                  <ion-col size="12" size-md="4">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Description</ion-label
+                      >
+                      <ion-textarea
+                        formControlName="description"
+                        rows="2"
+                        placeholder="Describe your campaign..."
+                        class="custom-input custom-textarea"
+                        style="--height: 60px"
+                      ></ion-textarea>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="12" size-md="4">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Deliverables</ion-label
+                      >
+                      <ion-textarea
+                        formControlName="deliverables"
+                        rows="2"
+                        placeholder="e.g. 2 Instagram posts + 1 reel"
+                        class="custom-input custom-textarea"
+                        style="--height: 60px"
+                      ></ion-textarea>
+                    </ion-item>
+                  </ion-col>
+                  <ion-col size="12" size-md="4">
+                    <ion-item lines="none" class="form-item">
+                      <ion-label position="stacked" class="form-label"
+                        >Requirements</ion-label
+                      >
+                      <ion-textarea
+                        formControlName="requirements"
+                        rows="2"
+                        class="custom-input custom-textarea"
+                        style="--height: 60px"
+                      ></ion-textarea>
+                    </ion-item>
+                  </ion-col>
+                </ion-row>
+
+                <div class="form-actions">
+                  <ion-button
+                    type="button"
+                    fill="clear"
+                    color="medium"
+                    (click)="toggleCreateForm()"
+                    class="btn-cancel"
+                  >
+                    Cancel
+                  </ion-button>
+                  <ion-button
+                    type="submit"
+                    [disabled]="campaignForm.invalid || isLoading"
+                    class="btn-submit"
+                  >
+                    {{ isLoading ? "Publishing..." : "Publish Campaign" }}
+                  </ion-button>
+                </div>
+              </form>
+            </ion-card-content>
+          </ion-card>
+
+          <div class="page-title-row" *ngIf="!selectedCampaign">
+            <div>
+              <h1 class="page-title">
+                {{
+                  activeTab === "discover"
+                    ? "Discover Campaigns"
+                    : "My Applications"
+                }}
+              </h1>
+              <p class="page-sub">
+                {{ filteredCampaigns.length }} campaign{{
+                  filteredCampaigns.length !== 1 ? "s" : ""
+                }}
+                found
+              </p>
+            </div>
+            <div class="view-controls">
+              <ion-badge color="medium" class="results-label">
+                {{
+                  selectedNiche !== "all"
+                    ? (selectedNiche | titlecase)
+                    : "All Niches"
+                }}
+              </ion-badge>
+            </div>
+          </div>
+
+          <div class="loading-wrap" *ngIf="isLoading && !selectedCampaign">
+            <ion-spinner name="crescent"></ion-spinner>
+            <span>Loading campaigns…</span>
+          </div>
+          <ion-card
+            class="empty-state"
+            *ngIf="
+              !isLoading && filteredCampaigns.length === 0 && !selectedCampaign
+            "
+          >
+            <ion-card-content>
+              <div class="empty-icon"></div>
+              <h3>No campaigns found</h3>
+              <p *ngIf="user?.role === 'influencer'">
+                No campaigns available right now. Try a different filter or
+                check back later.
+              </p>
+              <p *ngIf="user?.role === 'brand'">
+                You haven't created any campaigns yet.
+              </p>
+              <ion-button
+                *ngIf="user?.role === 'brand'"
+                class="btn-submit"
+                style="margin-top: 20px"
+                (click)="toggleCreateForm()"
+              >
+                Create a Campaign
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+
+          <div class="camp-grid" *ngIf="!isLoading && !selectedCampaign">
+            <ion-card
+              class="camp-card"
+              *ngFor="let c of filteredCampaigns"
+              (click)="viewCampaignDetails(c)"
+            >
+              <ion-card-header class="card-header">
+                <div class="brand-row">
+                  <ion-avatar class="brand-avatar">
+                    <img *ngIf="c.brand?.companyLogo || c.brand?.profilePicture; else initialBlock1" [src]="'http://localhost:3000/' + (c.brand?.companyLogo || c.brand?.profilePicture)" />
+                    <ng-template #initialBlock1>
+                      <span class="avatar-letter">{{ getBrandInitial(c) }}</span>
+                    </ng-template>
+                  </ion-avatar>
+                  <div class="brand-info">
+                    <span class="brand-name-text">{{
+                      c.brandName || c.brandEmail
+                    }}</span>
+                    <span class="brand-platform">{{
+                      c.platform || "Instagram"
+                    }}</span>
+                  </div>
+                </div>
+                <ion-badge color="light" class="niche-tag">{{
+                  c.niche | titlecase
+                }}</ion-badge>
+              </ion-card-header>
+
+              <ion-card-content>
+                <h3 class="card-title">{{ c.title }}</h3>
+                <p class="card-desc">{{ c.description }}</p>
+
+                <div class="card-stats">
+                  <ion-chip outline color="success" class="stat-chip">
+                    <ion-label>₹{{ c.budget | number }}</ion-label>
+                  </ion-chip>
+                  <ion-chip outline color="warning" class="stat-chip">
+                    <ion-label>{{ getCampaignTimingStatus(c) }}</ion-label>
+                  </ion-chip>
+                  <ion-chip outline color="primary" class="stat-chip">
+                    <ion-label
+                      >{{ getApplicantCount(c) }}/{{
+                        getMaxApplicants(c)
+                      }}</ion-label
+                    >
+                  </ion-chip>
+                </div>
+
+                <div class="progress-container">
+                  <ion-progress-bar
+                    [value]="getProgressWidth(c) / 100"
+                    class="progress-bar-ionic"
+                  ></ion-progress-bar>
+                </div>
+
+                <div class="card-footer">
+                  <span class="card-date">{{
+                    c.createdAt | date: "mediumDate"
+                  }}</span>
+                  <ion-badge
+                    [color]="
+                      getApplicationStatus(c) === 'accepted'
+                        ? 'success'
+                        : getApplicationStatus(c) === 'rejected'
+                          ? 'danger'
+                          : 'warning'
+                    "
+                    *ngIf="hasApplied(c)"
+                    class="status-badge"
+                  >
+                    {{ getApplicationStatus(c) | titlecase }}
+                  </ion-badge>
+                  <ion-button
+                    size="small"
+                    fill="clear"
+                    color="light"
+                    class="view-btn"
+                    *ngIf="!hasApplied(c) && user?.role === 'influencer'"
+                  >
+                    View →
+                  </ion-button>
+                </div>
+              </ion-card-content>
+            </ion-card>
+          </div>
+
+          <div class="detail-view" *ngIf="selectedCampaign">
+            <ion-button
+              fill="clear"
+              color="medium"
+              (click)="closeDetails()"
+              class="back-link"
+            >
+              &larr; Back to Campaigns
+            </ion-button>
+
+            <ion-grid class="detail-grid-layout">
+              <ion-row>
+                <ion-col size="12" size-lg="8" class="detail-main-col">
+                  <ion-card class="detail-card">
+                    <ion-card-header class="detail-head">
+                      <div class="brand-row">
+                        <ion-avatar class="brand-avatar large">
+                          <img *ngIf="selectedCampaign.brand?.companyLogo || selectedCampaign.brand?.profilePicture; else initialBlock2" [src]="'http://localhost:3000/' + (selectedCampaign.brand?.companyLogo || selectedCampaign.brand?.profilePicture)" />
+                          <ng-template #initialBlock2>
+                            <span class="avatar-letter">{{ getBrandInitial(selectedCampaign) }}</span>
+                          </ng-template>
+                        </ion-avatar>
+                        <div class="brand-info">
+                          <span class="brand-name-text">{{
+                            selectedCampaign.brandName ||
+                              selectedCampaign.brandEmail
+                          }}</span>
+                          <span class="brand-platform">{{
+                            selectedCampaign.platform || "Instagram"
+                          }}</span>
+                        </div>
+                      </div>
+                      <ion-badge color="light" class="niche-tag">{{
+                        selectedCampaign.niche | titlecase
+                      }}</ion-badge>
+                    </ion-card-header>
+
+                    <ion-card-content>
+                      <h2 class="detail-title">{{ selectedCampaign.title }}</h2>
+                      <p class="detail-desc">
+                        {{ selectedCampaign.description }}
+                      </p>
+
+                      <ion-grid class="detail-info-grid">
+                        <ion-row>
+                          <ion-col size="6">
+                            <div class="detail-item">
+                              <span class="d-label">Budget</span>
+                              <span class="d-value"
+                                >₹{{ selectedCampaign.budget | number }} /
+                                person</span
+                              >
+                            </div>
+                          </ion-col>
+                          <ion-col size="6">
+                            <div class="detail-item">
+                              <span class="d-label">Niche</span>
+                              <span class="d-value">{{
+                                selectedCampaign.niche | titlecase
+                              }}</span>
+                            </div>
+                          </ion-col>
+                        </ion-row>
+
+                        <ion-row style="margin-top: 10px">
+                          <ion-col size="4">
+                            <div class="detail-item">
+                              <span class="d-label">Platform</span>
+                              <span class="d-value">{{
+                                selectedCampaign.platform || "Instagram"
+                              }}</span>
+                            </div>
+                          </ion-col>
+                          <ion-col size="4">
+                            <div class="detail-item">
+                              <span class="d-label">Timing</span>
+                              <span class="d-value">{{
+                                getCampaignTimingStatus(selectedCampaign)
+                              }}</span>
+                            </div>
+                          </ion-col>
+                          <ion-col size="4">
+                            <div class="detail-item">
+                              <span class="d-label">Applications</span>
+                              <span class="d-value"
+                                >{{ getApplicantCount(selectedCampaign) }} /
+                                {{ getMaxApplicants(selectedCampaign) }}</span
+                              >
+                            </div>
+                          </ion-col>
+                        </ion-row>
+
+                        <ion-row style="margin-top: 10px">
+                          <ion-col size="12">
+                            <div class="detail-item">
+                              <span class="d-label">Deliverables</span>
+                              <span class="d-value">{{
+                                selectedCampaign.deliverables
+                              }}</span>
+                            </div>
+                          </ion-col>
+                        </ion-row>
+
+                        <ion-row style="margin-top: 10px">
+                          <ion-col size="12">
+                            <div class="detail-item">
+                              <span class="d-label">Requirements</span>
+                              <span class="d-value">{{
+                                selectedCampaign.requirements
+                              }}</span>
+                            </div>
+                          </ion-col>
+                        </ion-row>
+                      </ion-grid>
+                    </ion-card-content>
+                  </ion-card>
+
+                  <!-- Applications List (Brands) -->
+                  <ion-card
+                    class="applications-card"
+                    *ngIf="
+                      user?.role === 'brand' &&
+                      selectedCampaign.applications?.length
+                    "
+                  >
+                    <ion-card-header>
+                      <h4 class="section-head">
+                        Applications ({{
+                          selectedCampaign.applications?.length
+                        }})
+                      </h4>
+                    </ion-card-header>
+
+                    <ion-card-content>
+                      <div
+                        class="app-item"
+                        *ngFor="let app of selectedCampaign.applications"
+                      >
+                        <div class="app-top">
+                          <ion-avatar class="app-avatar-badge">
+                            <img *ngIf="app.influencer?.profilePicture; else initialBlock3" [src]="'http://localhost:3000/' + app.influencer.profilePicture" />
+                            <ng-template #initialBlock3>
+                              <span class="avatar-letter">{{ app.influencerEmail?.charAt(0).toUpperCase() }}</span>
+                            </ng-template>
+                          </ion-avatar>
+                          <div>
+                            <strong>{{
+                              app.influencerName || app.influencerEmail
+                            }}</strong>
+                            <span class="app-date">{{
+                              app.appliedAt | date: "mediumDate"
+                            }}</span>
+                          </div>
+                          <ion-badge
+                            [color]="
+                              app.status === 'accepted'
+                                ? 'success'
+                                : app.status === 'rejected'
+                                  ? 'danger'
+                                  : 'warning'
+                            "
+                            class="status-badge"
+                            style="margin-left: auto"
+                          >
+                            {{ app.status | titlecase }}
+                          </ion-badge>
+                          <div
+                            class="app-actions"
+                            *ngIf="app.status === 'pending'"
+                          >
+                            <ion-button
+                              size="small"
+                              fill="outline"
+                              color="success"
+                              (click)="
+                                updateApplication(app, 'accepted');
+                                $event.stopPropagation()
+                              "
+                            >
+                              Approve
+                            </ion-button>
+                            <ion-button
+                              size="small"
+                              fill="outline"
+                              color="danger"
+                              (click)="
+                                updateApplication(app, 'rejected');
+                                $event.stopPropagation()
+                              "
+                            >
+                              Decline
+                            </ion-button>
+                          </div>
+                        </div>
+                        <p class="app-message">{{ app.message }}</p>
+                      </div>
+                    </ion-card-content>
+                  </ion-card>
+                </ion-col>
+
+                <ion-col size="12" size-lg="4" class="detail-side-col">
+                  <ion-card
+                    class="apply-card"
+                    *ngIf="
+                      user?.role === 'influencer' &&
+                      selectedCampaign.status === 'open'
+                    "
+                  >
+                    <ion-card-header>
+                      <h4 class="section-head">Apply for this Campaign</h4>
+                    </ion-card-header>
+
+                    <ion-card-content>
+                      <div *ngIf="!hasApplied(selectedCampaign)">
+                        <p class="apply-hint">
+                          Write a short pitch to the brand explaining why you're
+                          a great fit.
+                        </p>
+                        <ion-item lines="none" class="form-item">
+                          <ion-textarea
+                            [(ngModel)]="applicationMessage"
+                            rows="5"
+                            placeholder="Tell the brand why you're a great fit..."
+                            class="custom-input custom-textarea"
+                            style="--height: 120px"
+                          ></ion-textarea>
+                        </ion-item>
+                        <ion-button
+                          expand="block"
+                          class="auth-btn"
+                          style="margin-top: 14px"
+                          (click)="applyToCampaign(selectedCampaign)"
+                          [disabled]="isLoading"
+                        >
+                          {{
+                            isLoading ? "Submitting..." : "Submit Application"
+                          }}
+                        </ion-button>
+                      </div>
+
+                      <div
+                        class="already-applied"
+                        *ngIf="hasApplied(selectedCampaign)"
+                      >
+                        You've already applied to this campaign.
+                        <ion-badge
+                          [color]="
+                            getApplicationStatus(selectedCampaign) ===
+                            'accepted'
+                              ? 'success'
+                              : getApplicationStatus(selectedCampaign) ===
+                                  'rejected'
+                                ? 'danger'
+                                : 'warning'
+                          "
+                          class="status-badge"
+                          style="
+                            display: block;
+                            margin-top: 10px;
+                            text-align: center;
+                          "
+                        >
+                          Status:
+                          {{
+                            getApplicationStatus(selectedCampaign) | titlecase
+                          }}
+                        </ion-badge>
+                      </div>
+                    </ion-card-content>
+                  </ion-card>
+
+                  <ion-card class="stats-card">
+                    <ion-card-header>
+                      <h4 class="section-head">Campaign Stats</h4>
+                    </ion-card-header>
+
+                    <ion-card-content>
+                      <div class="stat-row">
+                        <span class="stat-label">Timing</span>
+                        <span class="stat-val">{{
+                          getCampaignTimingStatus(selectedCampaign)
+                        }}</span>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Applicants</span>
+                        <span class="stat-val"
+                          >{{ getApplicantCount(selectedCampaign) }} /
+                          {{ getMaxApplicants(selectedCampaign) }}</span
+                        >
+                      </div>
+                      <div
+                        class="progress-track"
+                        style="margin-top: 12px; margin-bottom: 12px"
+                      >
+                        <ion-progress-bar
+                          [value]="getProgressWidth(selectedCampaign) / 100"
+                          class="progress-bar-ionic"
+                        ></ion-progress-bar>
+                      </div>
+                      <div class="stat-row" style="align-items: center">
+                        <span class="stat-label">Status</span>
+
+                        <span
+                          *ngIf="user?.role !== 'brand'"
+                          class="stat-val"
+                          style="text-transform: capitalize"
+                          >{{ selectedCampaign.status }}</span
+                        >
+
+                        <ion-select
+                          *ngIf="user?.role === 'brand'"
+                          [value]="selectedCampaign.status"
+                          (ionChange)="
+                            updateCampaignStatus($any($event).detail.value)
+                          "
+                          interface="popover"
+                          class="custom-select-ionic"
+                          style="max-width: 140px; margin: 0; padding-right: 0"
+                        >
+                          <ion-select-option value="open"
+                            >Open</ion-select-option
+                          >
+                          <ion-select-option value="in-progress"
+                            >In-Progress</ion-select-option
+                          >
+                          <ion-select-option value="completed"
+                            >Completed</ion-select-option
+                          >
+                          <ion-select-option value="cancelled"
+                            >Cancelled</ion-select-option
+                          >
+                        </ion-select>
+                      </div>
+                      <div class="stat-row">
+                        <span class="stat-label">Posted</span>
+                        <span class="stat-val">{{
+                          selectedCampaign.createdAt | date: "mediumDate"
+                        }}</span>
+                      </div>
+                    </ion-card-content>
+                  </ion-card>
+                </ion-col>
+              </ion-row>
+            </ion-grid>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</ion-content>

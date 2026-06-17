@@ -1,0 +1,53 @@
+<ion-content [fullscreen]="true">
+  <div class="auth-container">
+    <ion-card class="auth-card">
+      <ion-card-header class="auth-header">
+        <ion-card-title class="brand-title">Welcome Back</ion-card-title>
+        <p class="subtitle">Enter your credentials to access your account</p>
+      </ion-card-header>
+
+      <ion-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <ion-item lines="none" class="form-item">
+            <ion-label position="stacked" class="form-label">Email Address</ion-label>
+            <ion-input
+              formControlName="email"
+              type="email"
+              placeholder="name@example.com"
+              class="custom-input"
+            ></ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="form-item">
+            <ion-label position="stacked" class="form-label">Password</ion-label>
+            <ion-input
+              formControlName="password"
+              type="password"
+              placeholder="••••••••"
+              class="custom-input"
+            ></ion-input>
+          </ion-item>
+
+          <ion-text color="danger" class="error-msg-text" *ngIf="errorMsg">
+            <p class="error-msg">{{ errorMsg }}</p>
+          </ion-text>
+
+          <ion-button
+            type="submit"
+            expand="block"
+            class="auth-btn"
+            [disabled]="loginForm.invalid || isLoading"
+          >
+            {{ isLoading ? 'Logging in...' : 'Sign In' }}
+          </ion-button>
+        </form>
+
+        <div class="auth-footer">
+          <ion-text color="medium">
+            <p>Don't have an account? <a routerLink="/register" class="signup-link">Sign Up</a></p>
+          </ion-text>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

@@ -1,0 +1,15 @@
+import { inject } from '@angular/core';
+import { Router, type CanActivateFn } from '@angular/router';
+import { AuthService } from '../services/auth.service';
+
+export const profilePendingGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (!authService.isProfileComplete()) {
+    return true;
+  }
+
+  router.navigate(['/profile-page']);
+  return false;
+};

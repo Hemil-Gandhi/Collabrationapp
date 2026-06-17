@@ -1,0 +1,606 @@
+<ion-content [fullscreen]="true">
+  <div class="auth-container">
+    <ion-card class="auth-card">
+      <ion-card-header class="auth-header">
+        <ion-card-title class="brand-title">Complete Profile</ion-card-title>
+        <p class="subtitle">
+          Set up your <strong>{{ role | titlecase }}</strong> workspace details
+        </p>
+      </ion-card-header>
+
+      <ion-card-content *ngIf="profileForm">
+        <form [formGroup]="profileForm" (ngSubmit)="onSubmit()">
+          <!-- Avatar Image Upload Area -->
+          <div class="avatar-upload-container">
+            <div class="avatar-preview-wrapper">
+              <img
+                *ngIf="avatarBase64"
+                [src]="avatarBase64"
+                alt="Avatar"
+                class="avatar-image"
+              />
+              <span *ngIf="!avatarBase64" class="avatar-placeholder">
+                {{
+                  (
+                    profileForm.get(
+                      role === "brand" ? "companyName" : "username"
+                    )?.value || "U"
+                  )
+                    .substring(0, 1)
+                    .toUpperCase()
+                }}
+              </span>
+              <label for="avatar-input" class="avatar-upload-overlay">
+                <span class="avatar-upload-text">UPLOAD</span>
+              </label>
+            </div>
+            <input
+              id="avatar-input"
+              type="file"
+              accept="image/*"
+              (change)="onAvatarSelected($event)"
+              style="display: none"
+            />
+            <p class="avatar-subtext">
+              {{
+                role === "brand" ? "Add company logo" : "Add profile picture"
+              }}
+            </p>
+          </div>
+
+          <!-- Full Name (Only for Influencer) -->
+          <ion-item
+            lines="none"
+            class="form-item"
+            *ngIf="role === 'influencer'"
+          >
+            <ion-label position="stacked" class="form-label"
+              >Full Name</ion-label
+            >
+            <ion-input
+              formControlName="name"
+              type="text"
+              placeholder="Your full name"
+              class="custom-input"
+            ></ion-input>
+          </ion-item>
+
+          <!-- Influencer specific field: Fluencr Username -->
+          <ion-item
+            lines="none"
+            class="form-item"
+            *ngIf="role === 'influencer'"
+          >
+            <ion-label position="stacked" class="form-label"
+              >Fluencr Username</ion-label
+            >
+            <div class="username-input-wrapper">
+              <span class="username-prefix">@</span>
+              <ion-input
+                formControlName="username"
+                type="text"
+                placeholder="username"
+                class="custom-input prefix-input"
+              ></ion-input>
+            </div>
+            <ion-text
+              color="danger"
+              class="error-msg-text"
+              *ngIf="
+                profileForm.get('username')?.touched &&
+                profileForm.get('username')?.errors
+              "
+            >
+              <p
+                class="error-msg"
+                *ngIf="profileForm.get('username')?.errors?.['required']"
+              >
+                Username is required.
+              </p>
+              <p
+                class="error-msg"
+                *ngIf="profileForm.get('username')?.errors?.['minlength']"
+              >
+                Username must be at least 3 characters.
+              </p>
+              <p
+                class="error-msg"
+                *ngIf="profileForm.get('username')?.errors?.['pattern']"
+              >
+                Username can only contain alphanumeric characters, underscores
+                and dots.
+              </p>
+            </ion-text>
+          </ion-item>
+
+          <!-- Email Address (Disabled/Locked as it's the primary key) -->
+          <ion-item lines="none" class="form-item form-item--disabled">
+            <ion-label position="stacked" class="form-label"
+              >Email Address (Locked)</ion-label
+            >
+            <ion-input
+              formControlName="email"
+              type="email"
+              class="custom-input"
+              readonly
+            ></ion-input>
+          </ion-item>
+
+          <ion-item lines="none" class="form-item">
+            <ion-label position="stacked" class="form-label"
+              >Phone Number</ion-label
+            >
+            <ion-input
+              formControlName="phone"
+              type="tel"
+              placeholder="+1234567890"
+              class="custom-input"
+            ></ion-input>
+          </ion-item>
+
+          <!-- Influencer Fields -->
+          <ng-container *ngIf="role === 'influencer'">
+            <ion-item lines="none" class="form-item">
+              <ion-label position="stacked" class="form-label">Bio</ion-label>
+              <ion-textarea
+                formControlName="bio"
+                rows="3"
+                placeholder="Tell us about yourself..."
+                class="custom-input custom-textarea"
+                style="--height: 80px"
+              ></ion-textarea>
+            </ion-item>
+
+            <!-- Categories / Niches (Multi-select) -->
+            <div class="niches-section">
+              <ion-label class="form-label section-label"
+                >Niches / Categories (select all that apply):</ion-label
+              >
+              <div class="chips-container">
+                <ion-chip
+                  *ngFor="let niche of nicheOptions"
+                  (click)="toggleNiche(niche)"
+                  [class.selected]="isNicheSelected(niche)"
+                >
+                  <ion-label>{{ niche | titlecase }}</ion-label>
+                </ion-chip>
+              </div>
+            </div>
+
+            <div class="niches-section">
+              <ion-label class="form-label section-label">
+                Country (select all that apply):
+              </ion-label>
+
+              <div class="chips-container">
+                <ion-chip
+                  *ngFor="let country of countryOptions"
+                  (click)="toggleCountry(country)"
+                  [class.selected]="isCountrySelected(country)"
+                >
+                  <ion-label>{{ country | titlecase }}</ion-label>
+                </ion-chip>
+              </div>
+            </div>
+
+            <!-- Social Media Platforms Section -->
+            <div class="section-container">
+              <h3 class="section-title">Social Channels</h3>
+              <p class="section-subtitle">
+                At least one platform must be fully completed. If you fill one
+                field, you must fill both.
+              </p>
+
+              <!-- Instagram Platform -->
+              <ion-card class="social-card">
+                <ion-card-header class="social-card-header">
+                  <ion-card-title class="social-card-title"
+                    >Instagram</ion-card-title
+                  >
+                </ion-card-header>
+                <ion-card-content class="social-card-content">
+                  <ion-row>
+                    <ion-col size="6">
+                      <ion-item lines="none" class="form-item">
+                        <ion-label position="stacked" class="form-label"
+                          >Handle</ion-label
+                        >
+                        <ion-input
+                          formControlName="instagramUsername"
+                          type="text"
+                          placeholder="username"
+                          class="custom-input"
+                        ></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="6">
+                      <ion-item lines="none" class="form-item">
+                        <ion-label position="stacked" class="form-label"
+                          >Followers</ion-label
+                        >
+                        <ion-input
+                          formControlName="instagramFollowers"
+                          type="number"
+                          placeholder="Followers"
+                          class="custom-input"
+                        ></ion-input>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-text
+                    color="danger"
+                    class="error-msg-text"
+                    *ngIf="profileForm.errors?.['instagramIncomplete']"
+                  >
+                    <p class="error-msg">
+                      Both Instagram Username and Followers must be entered.
+                    </p>
+                  </ion-text>
+                </ion-card-content>
+              </ion-card>
+
+              <!-- YouTube Platform -->
+              <ion-card class="social-card">
+                <ion-card-header class="social-card-header">
+                  <ion-card-title class="social-card-title"
+                    >YouTube</ion-card-title
+                  >
+                </ion-card-header>
+                <ion-card-content class="social-card-content">
+                  <ion-row>
+                    <ion-col size="6">
+                      <ion-item lines="none" class="form-item">
+                        <ion-label position="stacked" class="form-label"
+                          >Channel ID</ion-label
+                        >
+                        <ion-input
+                          formControlName="youtubeUsername"
+                          type="text"
+                          placeholder="channelname"
+                          class="custom-input"
+                        ></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="6">
+                      <ion-item lines="none" class="form-item">
+                        <ion-label position="stacked" class="form-label"
+                          >Subscribers</ion-label
+                        >
+                        <ion-input
+                          formControlName="youtubeFollowers"
+                          type="number"
+                          placeholder="Subscribers"
+                          class="custom-input"
+                        ></ion-input>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-text
+                    color="danger"
+                    class="error-msg-text"
+                    *ngIf="profileForm.errors?.['youtubeIncomplete']"
+                  >
+                    <p class="error-msg">
+                      Both YouTube Channel and Subscribers must be entered.
+                    </p>
+                  </ion-text>
+                </ion-card-content>
+              </ion-card>
+
+              <!-- X (Twitter) Platform -->
+              <ion-card class="social-card">
+                <ion-card-header class="social-card-header">
+                  <ion-card-title class="social-card-title"
+                    >X (Twitter)</ion-card-title
+                  >
+                </ion-card-header>
+                <ion-card-content class="social-card-content">
+                  <ion-row>
+                    <ion-col size="6">
+                      <ion-item lines="none" class="form-item">
+                        <ion-label position="stacked" class="form-label"
+                          >Username</ion-label
+                        >
+                        <ion-input
+                          formControlName="twitterUsername"
+                          type="text"
+                          placeholder="handle"
+                          class="custom-input"
+                        ></ion-input>
+                      </ion-item>
+                    </ion-col>
+                    <ion-col size="6">
+                      <ion-item lines="none" class="form-item">
+                        <ion-label position="stacked" class="form-label"
+                          >Followers</ion-label
+                        >
+                        <ion-input
+                          formControlName="twitterFollowers"
+                          type="number"
+                          placeholder="Followers"
+                          class="custom-input"
+                        ></ion-input>
+                      </ion-item>
+                    </ion-col>
+                  </ion-row>
+                  <ion-text
+                    color="danger"
+                    class="error-msg-text"
+                    *ngIf="profileForm.errors?.['twitterIncomplete']"
+                  >
+                    <p class="error-msg">
+                      Both X Handle and Followers must be entered.
+                    </p>
+                  </ion-text>
+                </ion-card-content>
+              </ion-card>
+
+              <!-- General Platforms Error -->
+              <ion-text
+                color="danger"
+                class="error-msg-text block-error"
+                *ngIf="
+                  profileForm.errors?.['noPlatformFilled'] &&
+                  (profileForm.get('instagramUsername')?.touched ||
+                    profileForm.get('youtubeUsername')?.touched ||
+                    profileForm.get('twitterUsername')?.touched)
+                "
+              >
+                <p class="error-msg">
+                  You must fully configure at least one social media channel
+                  (both username and followers).
+                </p>
+              </ion-text>
+            </div>
+
+            <!-- Past Work Links (FormArray) -->
+            <div class="section-container">
+              <div class="section-header-row">
+                <h3 class="section-title">Past Work / Portfolio Links</h3>
+                <ion-button
+                  type="button"
+                  (click)="addPastWorkLink()"
+                  size="small"
+                  fill="outline"
+                  class="add-btn"
+                >
+                  + Add Link
+                </ion-button>
+              </div>
+
+              <div formArrayName="pastWorkLinks" class="links-list">
+                <div
+                  *ngFor="let link of pastWorkLinks.controls; let i = index"
+                  class="link-item-row"
+                >
+                  <span class="link-index">#{{ i + 1 }}</span>
+                  <ion-item lines="none" class="form-item link-form-item">
+                    <ion-input
+                      [formControlName]="i"
+                      type="url"
+                      placeholder="https://instagram.com/p/abcde or portfolio url"
+                      class="custom-input"
+                    ></ion-input>
+                  </ion-item>
+                  <ion-button
+                    type="button"
+                    (click)="removePastWorkLink(i)"
+                    fill="clear"
+                    color="danger"
+                    class="remove-btn"
+                  >
+                    Delete
+                  </ion-button>
+                </div>
+              </div>
+
+              <div
+                *ngIf="pastWorkLinks.length === 0"
+                class="empty-state-container"
+              >
+                <p>No links added yet. Share some of your best work!</p>
+              </div>
+            </div>
+          </ng-container>
+
+          <!-- Brand Fields -->
+          <ng-container *ngIf="role === 'brand'">
+            <!-- First Name & Last Name -->
+            <ion-row>
+              <ion-col size="6">
+                <ion-item lines="none" class="form-item">
+                  <ion-label position="stacked" class="form-label"
+                    >First Name</ion-label
+                  >
+                  <ion-input
+                    formControlName="firstName"
+                    type="text"
+                    placeholder="First Name"
+                    class="custom-input"
+                  ></ion-input>
+                </ion-item>
+              </ion-col>
+              <ion-col size="6">
+                <ion-item lines="none" class="form-item">
+                  <ion-label position="stacked" class="form-label"
+                    >Last Name</ion-label
+                  >
+                  <ion-input
+                    formControlName="lastName"
+                    type="text"
+                    placeholder="Last Name"
+                    class="custom-input"
+                  ></ion-input>
+                </ion-item>
+              </ion-col>
+            </ion-row>
+
+            <!-- Company Name -->
+            <ion-item lines="none" class="form-item">
+              <ion-label position="stacked" class="form-label"
+                >Company Name</ion-label
+              >
+              <ion-input
+                formControlName="companyName"
+                type="text"
+                placeholder="Your company name"
+                class="custom-input"
+              ></ion-input>
+            </ion-item>
+
+            <!-- Brand Description -->
+            <ion-item lines="none" class="form-item">
+              <ion-label position="stacked" class="form-label"
+                >Brand Description</ion-label
+              >
+              <ion-textarea
+                formControlName="brandDescription"
+                rows="3"
+                placeholder="Tell us about your brand..."
+                class="custom-input custom-textarea"
+                style="--height: 80px"
+              ></ion-textarea>
+            </ion-item>
+
+            <!-- Website -->
+            <ion-item lines="none" class="form-item">
+              <ion-label position="stacked" class="form-label"
+                >Website</ion-label
+              >
+              <ion-input
+                formControlName="website"
+                type="url"
+                placeholder="https://example.com"
+                class="custom-input"
+              ></ion-input>
+              <ion-text
+                color="danger"
+                class="error-msg-text"
+                *ngIf="
+                  profileForm.get('website')?.touched &&
+                  profileForm.get('website')?.errors
+                "
+              >
+                <p
+                  class="error-msg"
+                  *ngIf="profileForm.get('website')?.errors?.['pattern']"
+                >
+                  Please enter a valid URL starting with http:// or https://
+                </p>
+              </ion-text>
+            </ion-item>
+
+            <!-- Industry -->
+            <ion-item lines="none" class="form-item">
+              <ion-label position="stacked" class="form-label"
+                >Industry</ion-label
+              >
+              <ion-select
+                formControlName="industry"
+                interface="popover"
+                placeholder="Select Industry"
+                class="custom-select-ionic"
+              >
+                <ion-select-option
+                  *ngFor="let industry of industryOptions"
+                  [value]="industry"
+                >
+                  {{ industry }}
+                </ion-select-option>
+              </ion-select>
+            </ion-item>
+
+            <!-- Campaign Budget (INR ₹) -->
+            <div class="budget-section">
+              <ion-label class="form-label section-label"
+                >Campaign Budget (INR ₹)</ion-label
+              >
+              <ion-row>
+                <ion-col size="5">
+                  <ion-item lines="none" class="form-item">
+                    <div class="username-input-wrapper">
+                      <span class="username-prefix">₹</span>
+                      <ion-input
+                        formControlName="minBudget"
+                        type="number"
+                        placeholder="Min"
+                        class="custom-input prefix-input"
+                        min="0"
+                      ></ion-input>
+                    </div>
+                  </ion-item>
+                </ion-col>
+                <ion-col size="2" class="budget-separator-col">
+                  <span class="budget-separator">to</span>
+                </ion-col>
+                <ion-col size="5">
+                  <ion-item lines="none" class="form-item">
+                    <div class="username-input-wrapper">
+                      <span class="username-prefix">₹</span>
+                      <ion-input
+                        formControlName="maxBudget"
+                        type="number"
+                        placeholder="Max"
+                        class="custom-input prefix-input"
+                        min="0"
+                      ></ion-input>
+                    </div>
+                  </ion-item>
+                </ion-col>
+              </ion-row>
+              <ion-text
+                color="danger"
+                class="error-msg-text"
+                *ngIf="
+                  (profileForm.get('minBudget')?.touched ||
+                    profileForm.get('maxBudget')?.touched) &&
+                  (profileForm.get('minBudget')?.errors ||
+                    profileForm.get('maxBudget')?.errors)
+                "
+              >
+                <p
+                  class="error-msg"
+                  *ngIf="
+                    profileForm.get('minBudget')?.errors?.['required'] ||
+                    profileForm.get('maxBudget')?.errors?.['required']
+                  "
+                >
+                  Both budgets are required.
+                </p>
+                <p
+                  class="error-msg"
+                  *ngIf="
+                    profileForm.get('minBudget')?.errors?.['min'] ||
+                    profileForm.get('maxBudget')?.errors?.['min']
+                  "
+                >
+                  Budgets cannot be negative.
+                </p>
+              </ion-text>
+            </div>
+          </ng-container>
+
+          <ion-text color="danger" class="error-msg-text" *ngIf="errorMsg">
+            <p class="error-msg">{{ errorMsg }}</p>
+          </ion-text>
+
+          <ion-button
+            type="submit"
+            expand="block"
+            class="auth-btn"
+            [disabled]="isLoading"
+            style="margin-top: 32px"
+          >
+            {{
+              isLoading ? "Saving Profile..." : "Complete Profile & Continue"
+            }}
+          </ion-button>
+        </form>
+
+        <div class="auth-footer" style="margin-top: 28px">
+          <a (click)="logout()" class="cancel-link">Sign Out / Cancel</a>
+        </div>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

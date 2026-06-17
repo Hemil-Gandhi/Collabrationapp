@@ -1,0 +1,178 @@
+// For information on how to create your own theme, please refer to:
+// https://ionicframework.com/docs/theming/
+
+/* ─── Force Dark Mode for All Ionic Components ─────────────────────────── */
+
+:root {
+  /* Primary: white on dark */
+  --ion-color-primary: #ffffff;
+  --ion-color-primary-rgb: 255, 255, 255;
+  --ion-color-primary-contrast: #09090b;
+  --ion-color-primary-contrast-rgb: 9, 9, 11;
+  --ion-color-primary-shade: #e0e0e0;
+  --ion-color-primary-tint: #ffffff;
+
+  /* Secondary */
+  --ion-color-secondary: #a1a1aa;
+  --ion-color-secondary-rgb: 161, 161, 170;
+  --ion-color-secondary-contrast: #09090b;
+  --ion-color-secondary-contrast-rgb: 9, 9, 11;
+  --ion-color-secondary-shade: #8e8e96;
+  --ion-color-secondary-tint: #ababb3;
+
+  /* Tertiary */
+  --ion-color-tertiary: #6366f1;
+  --ion-color-tertiary-rgb: 99, 102, 241;
+  --ion-color-tertiary-contrast: #ffffff;
+  --ion-color-tertiary-contrast-rgb: 255, 255, 255;
+  --ion-color-tertiary-shade: #575ad4;
+  --ion-color-tertiary-tint: #7375f2;
+
+  /* Success */
+  --ion-color-success: #10b981;
+  --ion-color-success-rgb: 16, 185, 129;
+  --ion-color-success-contrast: #ffffff;
+  --ion-color-success-contrast-rgb: 255, 255, 255;
+  --ion-color-success-shade: #0ea372;
+  --ion-color-success-tint: #28c08e;
+
+  /* Warning */
+  --ion-color-warning: #f59e0b;
+  --ion-color-warning-rgb: 245, 158, 11;
+  --ion-color-warning-contrast: #09090b;
+  --ion-color-warning-contrast-rgb: 9, 9, 11;
+  --ion-color-warning-shade: #d8860a;
+  --ion-color-warning-tint: #f6a823;
+
+  /* Danger */
+  --ion-color-danger: #ef4444;
+  --ion-color-danger-rgb: 239, 68, 68;
+  --ion-color-danger-contrast: #ffffff;
+  --ion-color-danger-contrast-rgb: 255, 255, 255;
+  --ion-color-danger-shade: #d23c3c;
+  --ion-color-danger-tint: #f15757;
+
+  /* Dark */
+  --ion-color-dark: #e4e4e7;
+  --ion-color-dark-rgb: 228, 228, 231;
+  --ion-color-dark-contrast: #09090b;
+  --ion-color-dark-contrast-rgb: 9, 9, 11;
+  --ion-color-dark-shade: #c9c9cb;
+  --ion-color-dark-tint: #e7e7e9;
+
+  /* Medium */
+  --ion-color-medium: #71717a;
+  --ion-color-medium-rgb: 113, 113, 122;
+  --ion-color-medium-contrast: #ffffff;
+  --ion-color-medium-contrast-rgb: 255, 255, 255;
+  --ion-color-medium-shade: #63636b;
+  --ion-color-medium-tint: #7f7f87;
+
+  /* Light */
+  --ion-color-light: #27272a;
+  --ion-color-light-rgb: 39, 39, 42;
+  --ion-color-light-contrast: #ffffff;
+  --ion-color-light-contrast-rgb: 255, 255, 255;
+  --ion-color-light-shade: #222225;
+  --ion-color-light-tint: #3d3d3f;
+
+  /* ── Global Dark Surfaces ────────────────────────────────────────────── */
+  --ion-background-color: #09090b;
+  --ion-background-color-rgb: 9, 9, 11;
+
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+
+  --ion-toolbar-background: rgba(9, 9, 11, 0.95);
+  --ion-toolbar-color: #ffffff;
+
+  --ion-tab-bar-background: #09090b;
+  --ion-tab-bar-color: #71717a;
+  --ion-tab-bar-color-selected: #ffffff;
+
+  --ion-card-background: #121214;
+  --ion-card-color: #ffffff;
+
+  --ion-item-background: #18181b;
+  --ion-item-color: #ffffff;
+  --ion-item-border-color: #27272a;
+
+  --ion-border-color: #1f1f23;
+
+  --ion-placeholder-color: #52525b;
+}
+
+/* Also apply via body.dark / @media for all modes */
+body {
+  --ion-background-color: #09090b;
+  --ion-background-color-rgb: 9, 9, 11;
+  --ion-text-color: #ffffff;
+  --ion-text-color-rgb: 255, 255, 255;
+  --ion-card-background: #121214;
+  --ion-card-color: #ffffff;
+  --ion-item-background: #18181b;
+  --ion-item-color: #ffffff;
+  --ion-toolbar-background: rgba(9, 9, 11, 0.95);
+  --ion-toolbar-color: #ffffff;
+  --ion-border-color: #1f1f23;
+}
+
+/* Ensure ion-card-title, ion-card-subtitle, ion-label all inherit light text */
+ion-card-title,
+ion-card-subtitle {
+  --color: #ffffff;
+  color: #ffffff !important;
+}
+
+ion-label {
+  --color: #e4e4e7;
+  color: #e4e4e7;
+}
+
+ion-item {
+  --background: #18181b;
+  --color: #ffffff;
+  --border-color: #27272a;
+}
+
+ion-list {
+  --ion-background-color: #09090b;
+  background: #09090b;
+}
+
+ion-select {
+  --placeholder-color: #52525b;
+  color: #ffffff;
+}
+
+/* Ensure popover/alert backgrounds are dark */
+ion-popover {
+  --background: #18181b;
+  --color: #ffffff;
+
+  ion-select-popover {
+    ion-item {
+      --background: #18181b;
+      --color: #ffffff;
+    }
+    ion-radio {
+      --color: #a1a1aa;
+      --color-checked: #ffffff;
+    }
+  }
+}
+
+ion-alert {
+  --background: #18181b;
+  --color: #ffffff;
+
+  .alert-title {
+    color: #ffffff;
+  }
+  .alert-message {
+    color: #a1a1aa;
+  }
+  .alert-button {
+    color: #ffffff;
+  }
+}
