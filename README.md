@@ -4,17 +4,17 @@ A full-stack web application designed to connect brands with influencers for cam
 
 ## Key Features
 
-### 🏢 Brand Features
+### Brand Features
 - **Campaign Creation**: Define details like niche, platform (Instagram, YouTube, Twitter), budget, deliverables, requirements, and dates.
 - **Application Management**: View pitches submitted by influencers and accept or reject applications.
 - **Brand Profile**: Customize brand details, company logo, website, and industry.
 
-### 🤳 Influencer Features
+###  Influencer Features
 - **Campaign Directory**: Browse open campaigns filtered by niche and platform.
 - **Pitches & Applications**: Submit custom pitches to open campaigns.
 - **Influencer Profile**: Customize bio, niche tags, country, social media links (Instagram, YouTube, Twitter), and profile pictures.
 
-### ⚙️ Core Architecture
+### Core Architecture
 - **Mongoose Discriminators**: Structured user schemas splitting a base `User` model into distinct `Brand` and `Influencer` sub-types.
 - **Secure Authentication**: JWT-based authentication with OTP-based verification.
 - **Dynamic Avatars**: Renders company logos or influencer profile pictures with elegant fallback text initials.
