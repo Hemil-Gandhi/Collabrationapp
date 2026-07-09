@@ -13,7 +13,7 @@ import { AuthService, User } from '../services/auth.service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Niche, Platform, CampaignStatus, Industry } from '.././models/enums';
 import { Campaign } from '.././models/interfaces';
-
+import { environment } from '../../environments/environment';
 const INDUSTRY_TO_NICHE: Record<string, string> = {
   [Industry.FASHION]: Niche.FASHION,
   [Industry.TECHNOLOGY]: Niche.TECH,
@@ -136,7 +136,7 @@ export class CampaignComponent implements OnInit, OnDestroy {
     return 0;
   }
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private fb: FormBuilder,
