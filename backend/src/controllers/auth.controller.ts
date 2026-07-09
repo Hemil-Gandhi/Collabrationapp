@@ -178,3 +178,4 @@ export async function getProfile(req: AuthenticatedRequest, res: Response, next:
     next(error);
   }
 }
+

@@ -189,34 +189,105 @@
                   >
                 </ion-card-header>
                 <ion-card-content class="social-card-content">
-                  <ion-row>
-                    <ion-col size="6">
-                      <ion-item lines="none" class="form-item">
-                        <ion-label position="stacked" class="form-label"
-                          >Handle</ion-label
-                        >
+                  <!-- Connected State -->
+                  <div
+                    *ngIf="user?.instagramAccountId"
+                    class="instagram-connected-state"
+                  >
+                    <div class="connected-badge">
+                      <span class="connected-dot"></span>
+                      <span class="connected-label">Connected</span>
+                    </div>
+                    <div class="connected-info">
+                      <p class="connected-username">
+                        @{{ user?.instagramUsername }}
+                      </p>
+                      <p
+                        class="connected-followers"
+                        *ngIf="user?.instagramFollowers != null"
+                      >
+                        {{ user?.instagramFollowers | number }} followers
+                      </p>
+                    </div>
+                    <ion-button
+                      type="button"
+                      (click)="disconnectInstagram()"
+                      fill="outline"
+                      color="danger"
+                      size="small"
+                      class="disconnect-btn"
+                      [disabled]="instagramLoading"
+                    >
+                      {{ instagramLoading ? "Disconnecting..." : "Disconnect" }}
+                    </ion-button>
+                  </div>
+
+                  <!-- Not Connected State -->
+                  <div
+                    *ngIf="!user?.instagramAccountId"
+                    class="instagram-connect-state"
+                  >
+                    <p class="connect-description">
+                      Paste your long-lived Instagram access token to
+                      automatically import your handle and follower count.
+                    </p>
+
+                    <div class="token-input-container">
+                      <ion-item lines="none" class="form-item token-item">
                         <ion-input
-                          formControlName="instagramUsername"
                           type="text"
-                          placeholder="username"
+                          placeholder="Paste your access token here..."
+                          [(ngModel)]="instagramToken"
+                          [ngModelOptions]="{ standalone: true }"
                           class="custom-input"
                         ></ion-input>
                       </ion-item>
-                    </ion-col>
-                    <ion-col size="6">
-                      <ion-item lines="none" class="form-item">
-                        <ion-label position="stacked" class="form-label"
-                          >Followers</ion-label
-                        >
-                        <ion-input
-                          formControlName="instagramFollowers"
-                          type="number"
-                          placeholder="Followers"
-                          class="custom-input"
-                        ></ion-input>
-                      </ion-item>
-                    </ion-col>
-                  </ion-row>
+
+                      <ion-button
+                        type="button"
+                        (click)="connectInstagram()"
+                        class="connect-instagram-btn"
+                        [disabled]="instagramLoading || !instagramToken"
+                      >
+                        <span *ngIf="!instagramLoading">Connect</span>
+                        <span *ngIf="instagramLoading">Connecting...</span>
+                      </ion-button>
+                    </div>
+
+                    <!-- Fallback manual entry -->
+                    <div class="manual-entry-divider">
+                      <span>or enter manually</span>
+                    </div>
+                    <ion-row>
+                      <ion-col size="6">
+                        <ion-item lines="none" class="form-item">
+                          <ion-label position="stacked" class="form-label"
+                            >Handle</ion-label
+                          >
+                          <ion-input
+                            formControlName="instagramUsername"
+                            type="text"
+                            placeholder="username"
+                            class="custom-input"
+                          ></ion-input>
+                        </ion-item>
+                      </ion-col>
+                      <ion-col size="6">
+                        <ion-item lines="none" class="form-item">
+                          <ion-label position="stacked" class="form-label"
+                            >Followers</ion-label
+                          >
+                          <ion-input
+                            formControlName="instagramFollowers"
+                            type="number"
+                            placeholder="Followers"
+                            class="custom-input"
+                          ></ion-input>
+                        </ion-item>
+                      </ion-col>
+                    </ion-row>
+                  </div>
+
                   <ion-text
                     color="danger"
                     class="error-msg-text"
@@ -227,49 +298,13 @@
                     </p>
                   </ion-text>
 
-                  <div
-                    class="instagram-connect-section"
-                    style="margin-top: 16px"
+                  <ion-text
+                    color="danger"
+                    class="error-msg-text"
+                    *ngIf="instagramError"
                   >
-                    <ion-item lines="none" class="form-item">
-                      <ion-label position="stacked" class="form-label"
-                        >Graph API Access Token (For Insights)</ion-label
-                      >
-                      <ion-input
-                        formControlName="instagramConnectToken"
-                        type="text"
-                        placeholder="Paste your token here"
-                        class="custom-input"
-                      ></ion-input>
-                    </ion-item>
-                    <ion-button
-                      type="button"
-                      expand="block"
-                      class="auth-btn connect-btn"
-                      [disabled]="
-                        isConnectingInstagram ||
-                        !profileForm.get('instagramConnectToken')?.value
-                      "
-                      (click)="connectInstagram()"
-                      style="margin-top: 10px"
-                    >
-                      {{
-                        isConnectingInstagram
-                          ? "Connecting..."
-                          : "Fetch & Connect Instagram"
-                      }}
-                    </ion-button>
-                    <p
-                      class="section-subtitle"
-                      *ngIf="
-                        user?.instagramMediaCount !== undefined &&
-                        user?.instagramMediaCount !== null
-                      "
-                      style="margin-top: 8px"
-                    >
-                      Media Count (Posts/Reels): {{ user?.instagramMediaCount }}
-                    </p>
-                  </div>
+                    <p class="error-msg">{{ instagramError }}</p>
+                  </ion-text>
                 </ion-card-content>
               </ion-card>
 
@@ -431,103 +466,99 @@
                 <p>No links added yet. Share some of your best work!</p>
               </div>
             </div>
-            <!-- ✅ closes .section-container (Past Work Links) — removed extra </div> that was here -->
 
-            <!-- Catalogue / Portfolio (Images & Reels) -->
+            <!-- AI Posts Section -->
             <div class="section-container">
               <div class="section-header-row">
-                <h3 class="section-title">Catalogue / Portfolio</h3>
-                <div>
-                  <input
-                    type="file"
-                    id="catalogue-upload"
-                    (change)="onCatalogueMediaSelected($event)"
-                    accept="image/*,video/mp4,video/quicktime,video/webm"
-                    style="display: none"
-                  />
-                  <ion-button
-                    type="button"
-                    (click)="syncInstagramCatalogue()"
-                    size="small"
-                    fill="outline"
-                    class="add-btn"
-                    [disabled]="
-                      isSyncingInstagram || !user?.instagramAccessToken
-                    "
-                    style="margin-right: 8px"
-                  >
-                    {{ isSyncingInstagram ? "Syncing..." : "Sync IG Posts" }}
-                  </ion-button>
-                  <ion-button
-                    type="button"
-                    onclick="
-                      document.getElementById('catalogue-upload').click()
-                    "
-                    size="small"
-                    fill="outline"
-                    class="add-btn"
-                    [disabled]="isUploadingMedia"
-                  >
-                    {{ isUploadingMedia ? "Uploading..." : "+ Upload Media" }}
-                  </ion-button>
-                </div>
-              </div>
-
-              <div
-                class="catalogue-grid"
-                *ngIf="user?.catalogue && user!.catalogue!.length > 0"
-              >
-                <div
-                  class="catalogue-item"
-                  *ngFor="let item of user?.catalogue"
+                <h3 class="section-title">My Posts</h3>
+                <ion-button
+                  routerLink="/create-post"
+                  size="small"
+                  fill="outline"
+                  class="add-btn"
                 >
-                  <div
-                    class="media-container"
-                    *ngIf="item.mediaType === 'image'"
-                  >
-                    <img
-                      [src]="
-                        item.source === 'manual'
-                          ? 'http://localhost:3000/' + item.mediaUrl
-                          : item.mediaUrl
-                      "
-                      alt="Catalogue Image"
-                    />
+                  + New Post
+                </ion-button>
+              </div>
+
+              <div *ngIf="isLoadingPosts" class="loading-state">
+                <ion-spinner name="crescent"></ion-spinner>
+              </div>
+
+              <div
+                *ngIf="!isLoadingPosts && posts.length > 0"
+                class="posts-grid"
+              >
+                <div *ngFor="let post of posts" class="post-item">
+                  <div class="post-image-container">
+                    <img [src]="post.imageUrl" alt="Post Image" />
                   </div>
-                  <div
-                    class="media-container"
-                    *ngIf="item.mediaType === 'video'"
-                  >
-                    <video
-                      [src]="
-                        item.source === 'manual'
-                          ? 'http://localhost:3000/' + item.mediaUrl
-                          : item.mediaUrl
-                      "
-                      controls
-                      preload="metadata"
-                    ></video>
+                  <div class="post-caption-container">
+                    <p class="post-caption">{{ post.caption }}</p>
+                    <span class="post-date">{{
+                      post.createdAt | date: "mediumDate"
+                    }}</span>
                   </div>
-                  <div class="item-overlay" *ngIf="item.caption">
-                    <p class="item-caption">{{ item.caption }}</p>
-                  </div>
-                  <ion-badge color="tertiary" class="source-badge">
-                    {{ item.source === "instagram" ? "IG" : "Uploaded" }}
-                  </ion-badge>
                 </div>
               </div>
 
               <div
-                *ngIf="!user?.catalogue || user?.catalogue?.length === 0"
+                *ngIf="!isLoadingPosts && posts.length === 0"
                 class="empty-state-container"
               >
-                <p>
-                  No media in catalogue. Upload some files or sync your
-                  Instagram posts!
-                </p>
+                <p>No posts drafted yet. Try creating one with AI!</p>
               </div>
             </div>
-            <!-- ✅ closes .section-container (Catalogue) -->
+            <!-- ✅ closes .section-container (AI Posts) -->
+
+            <!-- Synced Instagram Posts Section -->
+            <div class="section-container" *ngIf="user?.instagramAccountId">
+              <div class="section-header-row">
+                <h3 class="section-title">Live Instagram Feed</h3>
+                <ion-button
+                  (click)="loadSyncedInstagramPosts()"
+                  size="small"
+                  fill="clear"
+                  class="add-btn refresh-btn"
+                  [disabled]="isLoadingSyncedPosts"
+                >
+                  <ion-icon name="refresh-outline" slot="icon-only"></ion-icon>
+                </ion-button>
+              </div>
+
+              <div *ngIf="isLoadingSyncedPosts" class="loading-state">
+                <ion-spinner name="crescent"></ion-spinner>
+              </div>
+
+              <ion-text color="danger" class="error-msg-text" *ngIf="instagramMediaError && !isLoadingSyncedPosts">
+                <p class="error-msg">{{ instagramMediaError }}</p>
+              </ion-text>
+
+              <div *ngIf="!isLoadingSyncedPosts && syncedPosts.length > 0" class="synced-grid">
+                <a 
+                  *ngFor="let media of syncedPosts" 
+                  [href]="media.permalink" 
+                  target="_blank" 
+                  class="synced-item"
+                >
+                  <div class="synced-image-container">
+                    <img [src]="media.thumbnail_url || media.media_url" alt="Instagram Post" />
+                    <div class="play-icon-overlay" *ngIf="media.media_type === 'VIDEO'">
+                      <ion-icon name="play-circle"></ion-icon>
+                    </div>
+                  </div>
+                  <div class="synced-caption-overlay">
+                    <p class="synced-caption">{{ media.caption }}</p>
+                  </div>
+                </a>
+              </div>
+
+              <div *ngIf="!isLoadingSyncedPosts && syncedPosts.length === 0 && !instagramMediaError" class="empty-state-container">
+                <p>No posts found on your Instagram account.</p>
+              </div>
+            </div>
+            <!-- ✅ closes .section-container (Live Instagram Feed) -->
+
           </ng-container>
           <!-- ✅ closes *ngIf="user?.role === 'influencer'" -->
 

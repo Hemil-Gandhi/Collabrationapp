@@ -52,6 +52,20 @@
         </div>
       </ion-card>
 
+      <ion-card class="nav-card create-post-card" routerLink="/create-post" *ngIf="user?.role === 'influencer'">
+        <div class="card-bg"></div>
+        <ion-card-header>
+          <ion-card-title class="card-title">Create Post</ion-card-title>
+        </ion-card-header>
+        <ion-card-content class="card-desc">
+          <p>Draft a post with AI-powered captions</p>
+        </ion-card-content>
+        <div class="card-action">
+          <span>New Post ✨</span>
+          <ion-icon name="arrow-forward-outline"></ion-icon>
+        </div>
+      </ion-card>
+
       <ion-card class="nav-card profile-card" routerLink="/profile-page">
         <div class="card-bg"></div>
         <ion-card-header>

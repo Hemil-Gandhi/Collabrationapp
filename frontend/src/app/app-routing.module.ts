@@ -46,6 +46,11 @@ const routes: Routes = [
     loadComponent: () => import('./home/home.component').then(m => m.HomeComponent),
     canActivate: [authGuard, profileCompleteGuard],
   },
+  {
+    path: 'create-post',
+    loadComponent: () => import('./create-post/create-post.component').then(m => m.CreatePostComponent),
+    canActivate: [authGuard, profileCompleteGuard],
+  },
 ];
 
 @NgModule({

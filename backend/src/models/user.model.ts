@@ -73,6 +73,10 @@ export interface IInfluencer extends IUser {
   bio?: string;
   niches?: string[];
   countries?: string[];
+  instagramUsername?: string;
+  instagramFollowers?: number;
+  instagramAccessToken?: string;
+  instagramAccountId?: string;
   youtubeUsername?: string;
   youtubeFollowers?: number;
   twitterUsername?: string;
@@ -86,6 +90,10 @@ const InfluencerSchema = new Schema<IInfluencer>({
   bio: { type: String },
   niches: { type: [String], default: undefined },
   countries: { type: [String], default: undefined },
+  instagramUsername: { type: String },
+  instagramFollowers: { type: Number },
+  instagramAccessToken: { type: String },
+  instagramAccountId: { type: String },
   youtubeUsername: { type: String },
   youtubeFollowers: { type: Number },
   twitterUsername: { type: String },

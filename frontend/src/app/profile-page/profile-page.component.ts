@@ -8,6 +8,7 @@ import {
   AbstractControl,
   ValidationErrors,
   ReactiveFormsModule,
+  FormsModule,
 } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
@@ -17,7 +18,7 @@ import { Niche, Country, Industry } from '../models/enums';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, IonicModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, IonicModule],
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.scss'],
 })
@@ -25,13 +26,15 @@ export class ProfilePageComponent implements OnInit {
   profileForm!: FormGroup;
   user: User | null = null;
   isLoading = false;
-  isConnectingInstagram = false;
-  isSyncingInstagram = false;
-  isUploadingMedia = false;
   avatarBase64 = '';
   avatarFile: File | null = null;
-  instagramConnectToken =
-    'EAAOOwy09uZA0BRrT7pv1LXxpNLk3FMBzjPFXXmlynEc7SqCdDrBaeTNMiyK0OrXOLzVZBfodvHMJgD3Hb1qSrCatnq4g37RWQ1hQvTCeGzvIKvszaqGrfySXDHrhjmlJzZAc0jP8gW8LSAeAnVP5NnPIDPrDqgRFF5KR6ffAMJ5ZAZAWZAxe7bKmxFyZAlM';
+  
+  posts: any[] = [];
+  isLoadingPosts = false;
+
+  syncedPosts: any[] = [];
+  isLoadingSyncedPosts = false;
+  instagramMediaError = '';
 
   nicheOptions = Object.values(Niche);
   countryOptions = Object.values(Country);
@@ -94,6 +97,13 @@ export class ProfilePageComponent implements OnInit {
     this.initForm();
     this.loadLatestProfile();
 
+    if (this.user.role === 'influencer') {
+      this.loadPosts();
+      if (this.user.instagramAccountId) {
+        this.loadSyncedInstagramPosts();
+      }
+    }
+
     this.formChangesSub = this.profileForm.valueChanges.subscribe(() => {
       this.hasChanges = true;
     });
@@ -110,6 +120,43 @@ export class ProfilePageComponent implements OnInit {
           this.populateForm();
         }
       },
+    });
+  }
+
+  loadPosts() {
+    this.isLoadingPosts = true;
+    this.authService.getPosts().subscribe({
+      next: (res) => {
+        this.isLoadingPosts = false;
+        if (res && res.posts) {
+          this.posts = res.posts.map((post: any) => {
+            if (post.imageUrl && !post.imageUrl.startsWith('http')) {
+              post.imageUrl = `http://localhost:3000/${post.imageUrl}`;
+            }
+            return post;
+          });
+        }
+      },
+      error: () => {
+        this.isLoadingPosts = false;
+      }
+    });
+  }
+
+  loadSyncedInstagramPosts() {
+    this.isLoadingSyncedPosts = true;
+    this.instagramMediaError = '';
+    this.authService.getSyncedInstagramPosts().subscribe({
+      next: (res) => {
+        this.isLoadingSyncedPosts = false;
+        if (res && res.data) {
+          this.syncedPosts = res.data;
+        }
+      },
+      error: (err) => {
+        this.isLoadingSyncedPosts = false;
+        this.instagramMediaError = err.message;
+      }
     });
   }
 
@@ -141,7 +188,6 @@ export class ProfilePageComponent implements OnInit {
           bio: ['', [Validators.required, Validators.maxLength(500)]],
           instagramUsername: [''],
           instagramFollowers: [null],
-          instagramConnectToken: [''],
           youtubeUsername: [''],
           youtubeFollowers: [null],
           twitterUsername: [''],
@@ -202,13 +248,11 @@ export class ProfilePageComponent implements OnInit {
         bio: this.user.bio || '',
         instagramUsername: this.user.instagramUsername || '',
         instagramFollowers: this.user.instagramFollowers || null,
-        instagramConnectToken: this.user.instagramAccessToken || '',
         youtubeUsername: this.user.youtubeUsername || '',
         youtubeFollowers: this.user.youtubeFollowers || null,
         twitterUsername: this.user.twitterUsername || '',
         twitterFollowers: this.user.twitterFollowers || null,
       });
-      this.instagramConnectToken = this.user.instagramAccessToken || '';
 
       const linksArray = this.pastWorkLinks;
       while (linksArray.length !== 0) {
@@ -445,61 +489,53 @@ export class ProfilePageComponent implements OnInit {
       error: (err) => {},
     });
   }
+  instagramLoading = false;
+  instagramError = '';
+  instagramToken = '';
 
   connectInstagram() {
-    const token = this.profileForm.get('instagramConnectToken')?.value;
-    if (!token) return;
-    this.isConnectingInstagram = true;
-    this.authService.connectInstagram(token).subscribe({
-      next: (res) => {
-        this.isConnectingInstagram = false;
-        if (res && res.user) {
-          this.user = res.user;
-          this.populateForm();
-        }
-      },
-      error: (err) => {
-        this.isConnectingInstagram = false;
-        console.error(err);
-      },
-    });
-  }
-
-  syncInstagramCatalogue() {
-    this.isSyncingInstagram = true;
-    this.authService.syncInstagramCatalogue().subscribe({
-      next: (res) => {
-        this.isSyncingInstagram = false;
-        if (res && res.user) {
-          this.user = res.user;
-          this.populateForm();
-        }
-      },
-      error: (err) => {
-        this.isSyncingInstagram = false;
-        console.error('Sync failed', err);
-      },
-    });
-  }
-
-  onCatalogueMediaSelected(event: any) {
-    const file = event.target.files[0];
-    if (file) {
-      this.isUploadingMedia = true;
-      this.authService.uploadCatalogueMedia(file).subscribe({
-        next: (res) => {
-          this.isUploadingMedia = false;
-          if (res && res.user) {
-            this.user = res.user;
-            this.populateForm();
-          }
-        },
-        error: (err) => {
-          this.isUploadingMedia = false;
-          console.error('Upload failed', err);
-        },
-      });
+    if (!this.instagramToken || !this.instagramToken.trim()) {
+      this.instagramError = 'Please enter your Instagram access token.';
+      return;
     }
+
+    this.instagramLoading = true;
+    this.instagramError = '';
+    this.authService.connectInstagramWithToken(this.instagramToken.trim()).subscribe({
+      next: (res) => {
+        this.instagramLoading = false;
+        this.instagramToken = ''; // clear token input on success
+        if (res && res.user) {
+          this.user = res.user;
+          this.populateForm();
+          this.loadSyncedInstagramPosts(); // Fetch posts after connecting
+        }
+      },
+      error: (err) => {
+        this.instagramLoading = false;
+        this.instagramError = err.message || 'Failed to connect Instagram account.';
+      },
+    });
+  }
+
+  disconnectInstagram() {
+    this.instagramLoading = true;
+    this.instagramError = '';
+    this.authService.disconnectInstagram().subscribe({
+      next: (res) => {
+        this.instagramLoading = false;
+        this.syncedPosts = []; // Clear synced posts on disconnect
+        if (res && res.user) {
+          this.user = res.user;
+          this.populateForm();
+        }
+      },
+      error: (err) => {
+        this.instagramLoading = false;
+        this.instagramError =
+          err.message || 'Failed to disconnect Instagram.';
+      },
+    });
   }
 
   logout() {
