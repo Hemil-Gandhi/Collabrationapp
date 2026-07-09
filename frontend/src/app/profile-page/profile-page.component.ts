@@ -14,7 +14,7 @@ import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
 import { AuthService, User } from '../services/auth.service';
 import { Niche, Country, Industry } from '../models/enums';
-
+import { environment } from '../../environments/environment';
 @Component({
   selector: 'app-profile-page',
   standalone: true,
@@ -131,7 +131,8 @@ export class ProfilePageComponent implements OnInit {
         if (res && res.posts) {
           this.posts = res.posts.map((post: any) => {
             if (post.imageUrl && !post.imageUrl.startsWith('http')) {
-              post.imageUrl = `http://localhost:3000/${post.imageUrl}`;
+              const baseUrl = environment.apiUrl.replace('/api', '');
+              post.imageUrl = `${baseUrl}/${post.imageUrl}`;
             }
             return post;
           });
@@ -234,7 +235,8 @@ export class ProfilePageComponent implements OnInit {
       !imageUrl.startsWith('http') &&
       !imageUrl.startsWith('data:')
     ) {
-      imageUrl = `http://localhost:3000/${imageUrl}`;
+      const baseUrl = environment.apiUrl.replace('/api', '');
+      imageUrl = `${baseUrl}/${imageUrl}`;
     }
     this.avatarBase64 = imageUrl;
 

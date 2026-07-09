@@ -3,7 +3,7 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
-
+import { environment } from '../../environments/environment';
 export interface User {
   email: string;
   role: 'influencer' | 'brand';
@@ -47,7 +47,7 @@ export class AuthService {
   public registrationRole: 'influencer' | 'brand' = 'influencer';
   private registrationVerified: boolean = false;
 
-  private apiUrl = 'http://localhost:3000/api';
+  private apiUrl = environment.apiUrl;
 
   constructor(
     private http: HttpClient,
