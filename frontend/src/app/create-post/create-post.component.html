@@ -1,0 +1,99 @@
+<ion-content [fullscreen]="true" class="create-post-content">
+  <div class="page-container">
+    <div class="header-container">
+      <ion-button
+        routerLink="/home"
+        fill="clear"
+        color="medium"
+        class="back-arrow-btn"
+      >
+        &larr;
+      </ion-button>
+      <h1 class="page-title">New Post ✨</h1>
+    </div>
+
+    <ion-card class="post-card">
+      <ion-card-content>
+        <div class="image-upload-section">
+          <div
+            class="image-preview"
+            [class.has-image]="!!postImagePreview"
+            (click)="fileInput.click()"
+          >
+            <ng-container *ngIf="postImagePreview; else placeholder">
+              <img [src]="postImagePreview" alt="Post Preview" />
+              <div class="image-overlay">
+                <span>Change Image</span>
+              </div>
+            </ng-container>
+            <ng-template #placeholder>
+              <div class="placeholder-content">
+                <ion-icon name="image-outline"></ion-icon>
+                <p>Click to upload image</p>
+                <span class="supported-formats"
+                  >JPG, PNG, WEBP (Max 10MB)</span
+                >
+              </div>
+            </ng-template>
+          </div>
+          <input
+            #fileInput
+            type="file"
+            accept="image/*"
+            (change)="onImageSelected($event)"
+            hidden
+          />
+        </div>
+
+        <div class="caption-section">
+          <div class="caption-header">
+            <label class="section-label">Caption</label>
+            <button class="ai-trigger-btn" (click)="toggleAiPanel()">
+              ✨ Generate with AI
+            </button>
+          </div>
+
+          <!-- AI Panel -->
+          <div class="ai-panel" *ngIf="showAiPanel">
+            <p class="ai-help-text">What kind of caption do you want?</p>
+            <textarea
+              class="ai-input"
+              [(ngModel)]="aiPrompt"
+              placeholder="e.g. Make it funny, add fitness hashtags, or write about morning routines..."
+              rows="2"
+            ></textarea>
+            <div class="ai-actions">
+              <button class="btn-cancel" (click)="toggleAiPanel()">Cancel</button>
+              <button 
+                class="btn-generate" 
+                (click)="generateAiCaption()"
+                [disabled]="isGenerating || !aiPrompt.trim()"
+              >
+                {{ isGenerating ? 'Generating...' : 'Generate' }}
+              </button>
+            </div>
+          </div>
+
+          <textarea
+            class="caption-input"
+            [(ngModel)]="caption"
+            placeholder="Write a caption or let AI write one for you..."
+            rows="5"
+          ></textarea>
+        </div>
+
+        <ion-text color="danger" *ngIf="errorMessage" class="error-msg-text">
+          <p class="error-msg">{{ errorMessage }}</p>
+        </ion-text>
+
+        <button
+          class="submit-btn"
+          (click)="submitPost()"
+          [disabled]="isSubmitting || !postImageFile || !caption.trim()"
+        >
+          {{ isSubmitting ? 'Posting...' : 'Share Post' }}
+        </button>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>
