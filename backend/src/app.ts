@@ -7,6 +7,8 @@ import path from "path";
 import { errorMiddleware } from "./shared/middlewares/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
 import campaignRoutes from "./routes/campaign.routes.js";
+import instagramRoutes from "./routes/instagram.routes.js";
+import postRoutes from "./routes/post.routes.js";
 
 const app = express();
 
@@ -29,6 +31,8 @@ app.get("/health", (_req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/campaigns", campaignRoutes);
+app.use("/api/instagram", instagramRoutes);
+app.use("/api/posts", postRoutes);
 
 app.use((_req, res) =>
   res.status(404).json({ success: false, error: "Route not found" }),

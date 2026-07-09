@@ -17,6 +17,8 @@ const storage = multer.diskStorage({
       subDir = "profilePictures";
     } else if (file.fieldname === "catalogueMedia") {
       subDir = "catalogue";
+    } else if (file.fieldname === "postImage") {
+      subDir = "posts";
     }
 
     const targetDir = path.join(uploadDir, subDir);

@@ -1,12 +1,3 @@
-export interface CatalogueItem {
-  source: "instagram" | "manual";
-  mediaUrl: string;
-  mediaType: "image" | "video";
-  caption?: string;
-  igId?: string;
-  createdAt: Date;
-}
-
 export interface User {
   email: string;
   role: "influencer" | "brand";
@@ -19,14 +10,11 @@ export interface User {
   countries?: string[];
   instagramUsername?: string;
   instagramFollowers?: number | null;
-  instagramMediaCount?: number | null;
-  instagramAccessToken?: string;
   youtubeUsername?: string;
   youtubeFollowers?: number | null;
   twitterUsername?: string;
   twitterFollowers?: number | null;
   pastWorkLinks?: string[];
-  catalogue?: CatalogueItem[];
   avatar?: string;
   isVerified?: boolean;
   companyName?: string;

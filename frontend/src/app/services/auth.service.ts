@@ -4,15 +4,6 @@ import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
-export interface CatalogueItem {
-  source: 'instagram' | 'manual';
-  mediaUrl: string;
-  mediaType: 'image' | 'video';
-  caption?: string;
-  igId?: string;
-  createdAt: Date;
-}
-
 export interface User {
   email: string;
   role: 'influencer' | 'brand';
@@ -25,14 +16,12 @@ export interface User {
   countries?: string[];
   instagramUsername?: string;
   instagramFollowers?: number | null;
-  instagramMediaCount?: number | null;
-  instagramAccessToken?: string;
+  instagramAccountId?: string;
   youtubeUsername?: string;
   youtubeFollowers?: number | null;
   twitterUsername?: string;
   twitterFollowers?: number | null;
   pastWorkLinks?: string[];
-  catalogue?: CatalogueItem[];
   avatar?: string;
   isVerified?: boolean;
   companyName?: string;
@@ -250,40 +239,16 @@ export class AuthService {
       );
   }
 
-  connectInstagram(accessToken: string): Observable<any> {
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${this.getToken()}`,
-    });
-    return this.http
-      .post<any>(
-        `${this.apiUrl}/auth/connect-instagram`,
-        { accessToken },
-        { headers },
-      )
-      .pipe(
-        tap((res) => {
-          if (res && res.user) {
-            localStorage.setItem(
-              'onboarding_current_user',
-              JSON.stringify(res.user),
-            );
-            this.currentUserSubject.next(res.user);
-          }
-        }),
-        catchError((err) => {
-          return throwError(
-            () => new Error(err.error?.error || 'Failed to connect Instagram.'),
-          );
-        }),
-      );
-  }
 
-  syncInstagramCatalogue(): Observable<any> {
+  // ─── Instagram OAuth Methods ────────────────────────
+
+  connectInstagramWithToken(accessToken: string): Observable<any> {
     const headers = new HttpHeaders({
       Authorization: `Bearer ${this.getToken()}`,
+      'Content-Type': 'application/json',
     });
     return this.http
-      .post<any>(`${this.apiUrl}/auth/connect-instagram/sync`, {}, { headers })
+      .post<any>(`${this.apiUrl}/instagram/connect`, { accessToken }, { headers })
       .pipe(
         tap((res) => {
           if (res && res.user) {
@@ -298,23 +263,19 @@ export class AuthService {
           return throwError(
             () =>
               new Error(
-                err.error?.error || 'Failed to sync Instagram catalogue.',
+                err.error?.error || 'Failed to connect Instagram account.',
               ),
           );
         }),
       );
   }
 
-  uploadCatalogueMedia(file: File, caption: string = ''): Observable<any> {
+  disconnectInstagram(): Observable<any> {
     const headers = new HttpHeaders({
       Authorization: `Bearer ${this.getToken()}`,
     });
-    const formData = new FormData();
-    formData.append('catalogueMedia', file);
-    formData.append('caption', caption);
-
     return this.http
-      .post<any>(`${this.apiUrl}/auth/catalogue/upload`, formData, { headers })
+      .post<any>(`${this.apiUrl}/instagram/disconnect`, {}, { headers })
       .pipe(
         tap((res) => {
           if (res && res.user) {
@@ -327,7 +288,77 @@ export class AuthService {
         }),
         catchError((err) => {
           return throwError(
-            () => new Error(err.error?.error || 'Failed to upload media.'),
+            () =>
+              new Error(
+                err.error?.error || 'Failed to disconnect Instagram.',
+              ),
+          );
+        }),
+      );
+  }
+
+  // ─── Post & AI Methods ────────────────────────────
+
+  createPost(formData: FormData): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.getToken()}`,
+    });
+    return this.http
+      .post<any>(`${this.apiUrl}/posts`, formData, { headers })
+      .pipe(
+        catchError((err) => {
+          return throwError(
+            () => new Error(err.error?.error || 'Failed to create post.'),
+          );
+        }),
+      );
+  }
+
+  getPosts(): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.getToken()}`,
+    });
+    return this.http
+      .get<any>(`${this.apiUrl}/posts`, { headers })
+      .pipe(
+        catchError((err) => {
+          return throwError(
+            () => new Error(err.error?.error || 'Failed to fetch posts.'),
+          );
+        }),
+      );
+  }
+
+  generateCaption(prompt: string, currentCaption?: string): Observable<{ caption: string }> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.getToken()}`,
+      'Content-Type': 'application/json',
+    });
+    return this.http
+      .post<{ caption: string }>(
+        `${this.apiUrl}/posts/generate-caption`,
+        { prompt, currentCaption },
+        { headers }
+      )
+      .pipe(
+        catchError((err) => {
+          return throwError(
+            () => new Error(err.error?.error || 'Failed to generate AI caption.'),
+          );
+        }),
+      );
+  }
+
+  getSyncedInstagramPosts(): Observable<any> {
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${this.getToken()}`,
+    });
+    return this.http
+      .get<any>(`${this.apiUrl}/instagram/media`, { headers })
+      .pipe(
+        catchError((err) => {
+          return throwError(
+            () => new Error(err.error?.error || 'Failed to sync Instagram posts.'),
           );
         }),
       );

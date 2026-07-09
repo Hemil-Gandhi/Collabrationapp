@@ -14,7 +14,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Niche, Platform, CampaignStatus, Industry } from '.././models/enums';
 import { Campaign } from '.././models/interfaces';
 
-// Maps each Industry display value to a corresponding Niche value
 const INDUSTRY_TO_NICHE: Record<string, string> = {
   [Industry.FASHION]: Niche.FASHION,
   [Industry.TECHNOLOGY]: Niche.TECH,
@@ -35,8 +34,9 @@ const INDUSTRY_TO_NICHE: Record<string, string> = {
   [Industry.OTHER]: Niche.OTHER,
 };
 
-// Reverse map: Niche -> Industry display name
-const NICHE_TO_INDUSTRY: Record<string, string> = Object.entries(INDUSTRY_TO_NICHE).reduce(
+const NICHE_TO_INDUSTRY: Record<string, string> = Object.entries(
+  INDUSTRY_TO_NICHE,
+).reduce(
   (acc, [industry, niche]) => ({ ...acc, [niche]: industry }),
   {} as Record<string, string>,
 );
@@ -72,12 +72,10 @@ export class CampaignComponent implements OnInit, OnDestroy {
   nicheOptions = Object.values(Niche);
   platformOptions = Object.values(Platform);
 
-  /** Sidebar section label: "Industry" for brands, "Niche" for influencers */
   get sidebarNicheLabel(): string {
     return this.user?.role === 'brand' ? 'Industry' : 'Niche';
   }
 
-  /** Divider label below preferred items */
   get sidebarOtherLabel(): string {
     return this.user?.role === 'brand' ? 'Other Industries' : 'Other Niches';
   }
