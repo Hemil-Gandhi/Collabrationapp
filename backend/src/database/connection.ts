@@ -3,8 +3,12 @@ import { env } from "../config/env.js";
 import { logger } from "../shared/utils/logger.js";
 import { migrateCampaignDates, migrateCampaignBrands } from "../models/campaign.model.js";
 
+export function isDBReady(): boolean {
+  return mongoose.connection.readyState === 1;
+}
+
 export async function connectDB(): Promise<void> {
-  if (mongoose.connection.readyState >= 1) {
+  if (isDBReady()) {
     return;
   }
   if (process.env.VERCEL && (!env.MONGODB_URI || env.MONGODB_URI.includes("localhost"))) {
@@ -12,7 +16,11 @@ export async function connectDB(): Promise<void> {
     return;
   }
   try {
-    await mongoose.connect(env.MONGODB_URI);
+    await mongoose.connect(env.MONGODB_URI, {
+      // Fail fast on serverless: don't hang the function past its timeout.
+      serverSelectionTimeoutMS: 8000,
+      maxPoolSize: 1,
+    });
     logger.info("MongoDB connected");
     // Migrations are a one-off task: never run them on Vercel cold starts
     // (they scan whole collections and can exceed the serverless timeout).
