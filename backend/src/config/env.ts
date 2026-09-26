@@ -6,8 +6,10 @@ const envSchema = z.object({
     .enum(["development", "production", "test"])
     .default("development"),
   PORT: z.coerce.number().default(3000),
-  MONGODB_URI: z.string(),
-  JWT_SECRET: z.string().min(32),
+  MONGODB_URI: z.string().default("mongodb://localhost:27017/collabhub"),
+  JWT_SECRET: z
+    .string()
+    .default("default_secret_key_for_jwt_auth_must_be_32_chars_or_more"),
   JWT_EXPIRES_IN: z.string().default("7d"),
 
   EMAIL_HOST: z.string().default("smtp.gmail.com"),
@@ -23,7 +25,6 @@ const parsed = envSchema.safeParse(process.env);
 if (!parsed.success) {
   console.error("Invalid environment variables:");
   console.error(parsed.error.flatten().fieldErrors);
-  process.exit(1);
 }
 
-export const env = parsed.data;
+export const env = parsed.success ? parsed.data : envSchema.parse({});

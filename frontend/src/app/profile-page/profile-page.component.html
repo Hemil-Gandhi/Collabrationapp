@@ -204,7 +204,7 @@
                       </p>
                       <p
                         class="connected-followers"
-                        *ngIf="user?.instagramFollowers != null"
+                        *ngIf="user?.instagramFollowers !== null"
                       >
                         {{ user?.instagramFollowers | number }} followers
                       </p>

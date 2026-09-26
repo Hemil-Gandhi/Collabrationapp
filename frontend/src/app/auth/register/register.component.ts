@@ -31,10 +31,6 @@ export class RegisterComponent {
     });
   }
 
-  onRoleChange(event: any) {
-    this.selectedRole = event.detail.value;
-  }
-
   onSubmit() {
     if (this.registerForm.invalid) return;
 

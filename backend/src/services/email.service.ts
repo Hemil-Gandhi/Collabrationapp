@@ -1,26 +1,26 @@
 import nodemailer from "nodemailer";
 import { env } from "../config/env.js";
-import { logger } from "../shared/utils/logger.js";
 
-const transporter = nodemailer.createTransport({
-  host: env.EMAIL_HOST,
-  port: env.EMAIL_PORT,
-  secure: false,
-  auth: env.EMAIL_USER && env.EMAIL_PASS ? {
-    user: env.EMAIL_USER,
-    pass: env.EMAIL_PASS,
-  } : undefined,
-});
+let transporter: nodemailer.Transporter | null = null;
 
-transporter
-  .verify()
-  .catch((error) => {
-    logger.error("Error connecting to email service:", error);
+function getTransporter(): nodemailer.Transporter {
+  if (transporter) return transporter;
+  const isGmail = env.EMAIL_HOST.includes("gmail.com");
+  transporter = nodemailer.createTransport({
+    host: env.EMAIL_HOST,
+    port: isGmail ? 465 : env.EMAIL_PORT,
+    secure: isGmail ? true : env.EMAIL_PORT === 465,
+    auth: env.EMAIL_USER && env.EMAIL_PASS ? {
+      user: env.EMAIL_USER,
+      pass: env.EMAIL_PASS,
+    } : undefined,
   });
+  return transporter;
+}
 
 export async function sendOtpEmail(toEmail: string, otp: string): Promise<void> {
   const mailOptions = {
-    from: `"Collab Hub" <${env.EMAIL_FROM || env.EMAIL_USER}>`,
+    from: `"CreatorLink" <${env.EMAIL_FROM || env.EMAIL_USER}>`,
     to: toEmail,
     subject: "Your Verification Code",
     html: `
@@ -35,5 +35,5 @@ export async function sendOtpEmail(toEmail: string, otp: string): Promise<void> 
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  await getTransporter().sendMail(mailOptions);
 }

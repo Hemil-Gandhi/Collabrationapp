@@ -170,6 +170,15 @@ export class CampaignComponent implements OnInit, OnDestroy {
     const latestUser = this.authService.currentUserValue;
     if (latestUser) {
       this.user = latestUser;
+      if (this.user.email) {
+        this.authService.fetchUserProfile(this.user.email).subscribe({
+          next: (res) => {
+            if (res && res.user) {
+              this.user = res.user;
+            }
+          },
+        });
+      }
     }
     if (this.user) {
       this.loadCampaigns();

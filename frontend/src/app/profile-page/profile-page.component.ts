@@ -22,7 +22,7 @@ import { environment } from '../../environments/environment';
   templateUrl: './profile-page.component.html',
   styleUrls: ['./profile-page.component.scss'],
 })
-export class ProfilePageComponent implements OnInit {
+export class ProfilePageComponent implements OnInit, OnDestroy {
   profileForm!: FormGroup;
   user: User | null = null;
   isLoading = false;

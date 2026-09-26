@@ -3,6 +3,7 @@ import helmet from "helmet";
 import cors from "cors";
 import rateLimit from "express-rate-limit";
 import path from "path";
+import os from "os";
 
 import { errorMiddleware } from "./shared/middlewares/error.middleware.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -12,12 +13,16 @@ import postRoutes from "./routes/post.routes.js";
 
 const app = express();
 
-app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
+const staticUploadsDir = process.env.VERCEL
+  ? path.join(os.tmpdir(), "uploads")
+  : path.join(process.cwd(), "uploads");
 
-app.use(helmet());
+app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
+
+app.use("/uploads", express.static(staticUploadsDir));
 
 app.use(
   rateLimit({
@@ -27,7 +32,7 @@ app.use(
   }),
 );
 
-app.get("/health", (_req, res) => res.json({ status: "ok" }));
+app.get(["/health", "/api/health"], (_req, res) => res.json({ status: "ok" }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/campaigns", campaignRoutes);

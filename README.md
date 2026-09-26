@@ -1,4 +1,4 @@
-# Collab Hub - Influencer-Brand Collaboration Platform
+# CreatorLink - Influencer-Brand Collaboration Platform
 
 A full-stack web application designed to connect brands with influencers for campaign collaborations. Built using Express, TypeScript, and MongoDB on the backend, and Ionic with Angular on the frontend.
 

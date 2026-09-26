@@ -37,8 +37,11 @@ yarn-error.log*
 
 # Environment and sensitive data
 .env
+.env.vercel
 backend/.env
+frontend/www/
 
 # Uploaded assets
 backend/uploads/
 *.zip
+.vercel

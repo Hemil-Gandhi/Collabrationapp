@@ -1,7 +1,7 @@
 <ion-header [translucent]="true" class="camp-header">
   <ion-toolbar class="navbar">
     <ion-title slot="start" class="brand-title" routerLink="/home">
-      <span class="brand-title-text">Collab Hub</span>
+      <span class="brand-title-text">CreatorLink</span>
     </ion-title>
 
     <div class="header-center">
@@ -422,7 +422,7 @@
               <ion-card-header class="card-header">
                 <div class="brand-row">
                   <ion-avatar class="brand-avatar">
-                    <img *ngIf="c.brand?.companyLogo || c.brand?.profilePicture; else initialBlock1" [src]="'http://localhost:3000/' + (c.brand?.companyLogo || c.brand?.profilePicture)" />
+                    <img *ngIf="c.brand?.companyLogo || c.brand?.profilePicture; else initialBlock1" [src]="'/' + (c.brand?.companyLogo || c.brand?.profilePicture)" />
                     <ng-template #initialBlock1>
                       <span class="avatar-letter">{{ getBrandInitial(c) }}</span>
                     </ng-template>
@@ -516,7 +516,7 @@
                     <ion-card-header class="detail-head">
                       <div class="brand-row">
                         <ion-avatar class="brand-avatar large">
-                          <img *ngIf="selectedCampaign.brand?.companyLogo || selectedCampaign.brand?.profilePicture; else initialBlock2" [src]="'http://localhost:3000/' + (selectedCampaign.brand?.companyLogo || selectedCampaign.brand?.profilePicture)" />
+                    <img *ngIf="selectedCampaign.brand?.companyLogo || selectedCampaign.brand?.profilePicture; else initialBlock2" [src]="'/' + (selectedCampaign.brand?.companyLogo || selectedCampaign.brand?.profilePicture)" />
                           <ng-template #initialBlock2>
                             <span class="avatar-letter">{{ getBrandInitial(selectedCampaign) }}</span>
                           </ng-template>
@@ -639,7 +639,7 @@
                       >
                         <div class="app-top">
                           <ion-avatar class="app-avatar-badge">
-                            <img *ngIf="app.influencer?.profilePicture; else initialBlock3" [src]="'http://localhost:3000/' + app.influencer.profilePicture" />
+                            <img *ngIf="app.influencer?.profilePicture; else initialBlock3" [src]="'/' + app.influencer.profilePicture" />
                             <ng-template #initialBlock3>
                               <span class="avatar-letter">{{ app.influencerEmail?.charAt(0).toUpperCase() }}</span>
                             </ng-template>

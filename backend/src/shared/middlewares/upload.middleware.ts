@@ -1,11 +1,19 @@
 import multer from "multer";
 import fs from "fs";
 import path from "path";
+import os from "os";
 import { Request } from "express";
 
-const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
+const uploadDir = process.env.VERCEL
+  ? path.join(os.tmpdir(), "uploads")
+  : path.join(process.cwd(), "uploads");
+
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("Upload directory creation warning:", err);
 }
 
 const storage = multer.diskStorage({
@@ -23,8 +31,12 @@ const storage = multer.diskStorage({
 
     const targetDir = path.join(uploadDir, subDir);
 
-    if (!fs.existsSync(targetDir)) {
-      fs.mkdirSync(targetDir, { recursive: true });
+    try {
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+    } catch (err) {
+      console.warn("Target upload directory creation warning:", err);
     }
 
     cb(null, targetDir);

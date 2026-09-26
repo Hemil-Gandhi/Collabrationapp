@@ -1,7 +1,7 @@
 <ion-header [translucent]="true" class="camp-header">
   <ion-toolbar class="navbar">
     <ion-title slot="start" class="brand-title" routerLink="/home">
-      <span class="brand-title-text">Collab Hub</span>
+      <span class="brand-title-text">CreatorLink</span>
     </ion-title>
 
     <ion-buttons slot="end" class="navbar-right" *ngIf="user">
@@ -52,7 +52,11 @@
         </div>
       </ion-card>
 
-      <ion-card class="nav-card create-post-card" routerLink="/create-post" *ngIf="user?.role === 'influencer'">
+      <ion-card
+        class="nav-card create-post-card"
+        routerLink="/create-post"
+        *ngIf="user?.role === 'influencer'"
+      >
         <div class="card-bg"></div>
         <ion-card-header>
           <ion-card-title class="card-title">Create Post</ion-card-title>
@@ -61,7 +65,7 @@
           <p>Draft a post with AI-powered captions</p>
         </ion-card-content>
         <div class="card-action">
-          <span>New Post ✨</span>
+          <span>New Post</span>
           <ion-icon name="arrow-forward-outline"></ion-icon>
         </div>
       </ion-card>

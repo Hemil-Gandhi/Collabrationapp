@@ -9,7 +9,7 @@
       >
         &larr;
       </ion-button>
-      <h1 class="page-title">New Post ✨</h1>
+      <h1 class="page-title">New Post</h1>
     </div>
 
     <ion-card class="post-card">
@@ -30,9 +30,7 @@
               <div class="placeholder-content">
                 <ion-icon name="image-outline"></ion-icon>
                 <p>Click to upload image</p>
-                <span class="supported-formats"
-                  >JPG, PNG, WEBP (Max 10MB)</span
-                >
+                <span class="supported-formats">JPG, PNG, WEBP (Max 10MB)</span>
               </div>
             </ng-template>
           </div>
@@ -49,7 +47,7 @@
           <div class="caption-header">
             <label class="section-label">Caption</label>
             <button class="ai-trigger-btn" (click)="toggleAiPanel()">
-              ✨ Generate with AI
+              Generate with AI
             </button>
           </div>
 
@@ -63,13 +61,15 @@
               rows="2"
             ></textarea>
             <div class="ai-actions">
-              <button class="btn-cancel" (click)="toggleAiPanel()">Cancel</button>
-              <button 
-                class="btn-generate" 
+              <button class="btn-cancel" (click)="toggleAiPanel()">
+                Cancel
+              </button>
+              <button
+                class="btn-generate"
                 (click)="generateAiCaption()"
                 [disabled]="isGenerating || !aiPrompt.trim()"
               >
-                {{ isGenerating ? 'Generating...' : 'Generate' }}
+                {{ isGenerating ? "Generating..." : "Generate" }}
               </button>
             </div>
           </div>
@@ -91,7 +91,7 @@
           (click)="submitPost()"
           [disabled]="isSubmitting || !postImageFile || !caption.trim()"
         >
-          {{ isSubmitting ? 'Posting...' : 'Share Post' }}
+          {{ isSubmitting ? "Posting..." : "Share Post" }}
         </button>
       </ion-card-content>
     </ion-card>
